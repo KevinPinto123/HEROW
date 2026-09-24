@@ -1,30 +1,29 @@
 <div align="center">
 
 <!-- HEADER BANNER -->
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:0D0B2E,25:6B21A8,50:A855F7,75:00F0FF,100:D946EF&height=220&section=header&text=🌀%20HEROW&fontSize=80&fontColor=FFFFFF&animation=fadeIn&fontAlignY=35&desc=Portales%20del%20Futuro&descAlignY=55&descSize=25&descColor=00F0FF" width="100%"/>
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:0F0A2E,25:7C3AED,50:8B5CF6,75:22D3EE,100:E879F9&height=220&section=header&text=HEROW&fontSize=80&fontColor=FFFFFF&animation=fadeIn&fontAlignY=32&desc=Portales%20del%20Futuro&descAlignY=55&descSize=25&descColor=22D3EE" width="100%"/>
 
 <br/>
 
-<!-- LOGO -->
-<!-- Reemplaza con la ruta real de tu logo -->
-<!-- <img src="./assets/herow-logo.png" alt="HEROW Logo" width="180"/> -->
+<!-- LOGO: Descomenta y reemplaza con la ruta real de tu logo -->
+<!-- <img src="./assets/herow-logo.png" alt="HEROW Logo" width="200"/> -->
+
+### ✨ *Descubre tu futuro jugando. Crea tu heroína. Conquista tu camino.*
 
 <br/>
 
-### 🎮 *Descubre tu futuro jugando. Crea tu heroína. Conquista tu camino.*
-
-<br/>
-
-[![Plataforma](https://img.shields.io/badge/🌐_Plataforma-HEROW-0D0B2E?style=for-the-badge&labelColor=6B21A8&color=00F0FF)](https://herow.app)
-[![Target](https://img.shields.io/badge/🎯_Para_ti-15_a_17_años-D946EF?style=for-the-badge&labelColor=0D0B2E)](.)
-[![Misión](https://img.shields.io/badge/🚀_Misión-Define_tu_futuro-A855F7?style=for-the-badge&labelColor=0D0B2E)](.)
-[![Status](https://img.shields.io/badge/⚡_Estado-En_desarrollo-00F0FF?style=for-the-badge&labelColor=0D0B2E)](.)
+[![Plataforma](https://img.shields.io/badge/Plataforma-HEROW-0F0A2E?style=for-the-badge&labelColor=7C3AED&color=22D3EE)](https://herow.app)
+[![Target](https://img.shields.io/badge/Para_ti-15__a__17__a%C3%B1os-E879F9?style=for-the-badge&labelColor=0F0A2E)](.)
+[![IA](https://img.shields.io/badge/Potenciado_por-YessenIA-8B5CF6?style=for-the-badge&labelColor=0F0A2E)](.)
+[![Seguro](https://img.shields.io/badge/100%25-Seguro_para_menores-34D399?style=for-the-badge&labelColor=0F0A2E)](.)
+[![Status](https://img.shields.io/badge/Estado-En_desarrollo-22D3EE?style=for-the-badge&labelColor=0F0A2E)](.)
 
 <br/>
 
 ---
 
-<img src="https://readme-typing-svg.demolab.com?font=Orbitron&weight=700&size=22&duration=3000&pause=1000&color=00F0FF&center=true&vCenter=true&multiline=true&repeat=true&width=700&height=60&lines=¿Y+si+pudieras+ver+cómo+sería+tu+futuro...+antes+de+elegirlo?" alt="Typing SVG" />
+<!-- TYPING SVG con caracteres URL-encoded para compatibilidad -->
+<a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.demolab.com?font=Orbitron&weight=700&size=20&duration=3500&pause=1200&color=22D3EE&center=true&vCenter=true&repeat=true&width=680&height=55&lines=%C2%BFY+si+pudieras+ver+tu+futuro...+antes+de+elegirlo%3F;No+es+un+test+vocacional.+Es+tu+aventura.;Crea+tu+hero%C3%ADna.+Vence+al+NoPuedo.;Tu+futuro+empieza+con+un+portal." alt="Typing SVG" /></a>
 
 ---
 
@@ -34,88 +33,187 @@
 
 ## 🌀 ¿Qué es HEROW?
 
-> **HEROW** es una plataforma gamificada que transforma la exploración vocacional en una aventura épica. A través de combates de conocimiento, heroínas peruanas y portales STEM, las adolescentes de **15 a 17 años** descubren su camino antes de enfrentarse al mundo de las universidades, institutos y el trabajo.
+**HEROW** no es un test vocacional más. Es una **plataforma gamificada** que transforma la exploración vocacional en una aventura épica donde **tú eres la protagonista**.
+
+A través de misiones STEM, una IA que te guía y un sistema cooperativo de mentoras, las adolescentes de **15 a 17 años** descubren qué quieren ser **antes** de enfrentarse al mundo de universidades, institutos y el trabajo.
 
 <div align="center">
 
 ```
-╔══════════════════════════════════════════════════════════════╗
-║                                                              ║
-║   🌀  "A través de HEROW, sabrás cómo sería tu futuro"  🌀   ║
-║                                                              ║
-╚══════════════════════════════════════════════════════════════╝
+  ╔════════════════════════════════════════════════════════════════╗
+  ║                                                                ║
+  ║   🌀  "A través de HEROW, sabrás cómo sería tu futuro"   🌀   ║
+  ║                                                                ║
+  ║      No improvisas tu futuro. Lo descubres jugando.            ║
+  ║                                                                ║
+  ╚════════════════════════════════════════════════════════════════╝
 ```
 
 </div>
 
-**No es un test vocacional más.** Es un juego donde cada decisión, cada batalla y cada portal te acerca a descubrir quién puedes llegar a ser. 🔮
+> 🔐 **Diseñado con seguridad para menores:** Sin chats abiertos, sin contacto directo entre usuarias. Toda interacción pasa por sistemas de feedback predefinidos supervisados por IA.
 
 <br/>
 
-## 🎮 ¿Cómo funciona?
+---
+
+## 🎮 Así Funciona el Juego
+
+El flujo completo de HEROW sigue esta ruta — desde que creas tu heroína hasta que desbloqueas tu futuro:
 
 <div align="center">
 
 ```mermaid
 graph TD
-    A["🎭 1. ENTRA Y CREA TU HEROÍNA"]:::step1 --> B["🌀 2. ELIGE UN PORTAL DE CONOCIMIENTO"]:::step2
-    B --> C["⚔️ 3. COMBATE DE CONOCIMIENTO 1vs1"]:::step3
-    C --> D{"🏆 RESULTADO"}:::decision
-    D -->|"✅ GANA +10pts"| E["📊 ACUMULA PUNTOS"]:::step4
-    D -->|"❌ PIERDE +5pts"| E
-    D -->|"⚖️ ANULA 0pts"| E
-    E --> F{"¿Llegaste a 💯?"}:::decision
-    F -->|"🔄 Aún no"| C
-    F -->|"⭐ ¡SÍ!"| G["👾 JEFE FINAL: NoPuedo"]:::boss
-    G --> H["🎉 DESAFÍO COMPLETADO → NUEVO NIVEL"]:::complete
-    H --> I["🤖 YessenIA te orienta en tu camino"]:::ai
+    A["1. ENTRA Y CREA TU HEROINA\nRegistro + 3 preguntas\nElige una heroina peruana como avatar"]:::step1
+    A --> B["2. ELIGE UN PORTAL DE CONOCIMIENTO\nExplora temas STEM que te llaman\nEntra a una sala y espera a tu rival"]:::step2
+    B --> C["COMBATE DE CONOCIMIENTO\nRondas rapidas: elegir, ordenar,\ndetectar errores y decidir"]:::combat
+    C --> D{"RESULTADO"}:::decision
+    D -->|"GANA +10 puntos"| E["3. ACUMULA PUNTOS\nPuedes volver a combatir\nhasta llegar a 100"]:::step3
+    D -->|"PIERDE +5 puntos"| E
+    D -->|"SE ANULA 0 puntos"| E
+    E --> F{"Llegaste a 100?"}:::decision
+    F -->|"AUN NO"| C
+    F -->|"SI"| G["APARECE EL JEFE FINAL: NoPuedo\nPara vencerlo, completa un desafio practico\nEj: crea un perfil profesional"]:::boss
+    G --> H["DESAFIO COMPLETADO = NUEVO NIVEL\nSe abren nuevas misiones\ny continuas jugando"]:::complete
+    H --> I["YessenIA te orienta durante el camino\nSugiere portales, cursos y oportunidades\nsegun tus intereses"]:::ai
 
-    classDef step1 fill:#6B21A8,stroke:#00F0FF,color:#fff,stroke-width:2px
-    classDef step2 fill:#7C3AED,stroke:#00F0FF,color:#fff,stroke-width:2px
-    classDef step3 fill:#A855F7,stroke:#D946EF,color:#fff,stroke-width:2px
-    classDef step4 fill:#6B21A8,stroke:#00F0FF,color:#fff,stroke-width:2px
-    classDef decision fill:#0D0B2E,stroke:#D946EF,color:#00F0FF,stroke-width:2px
-    classDef boss fill:#DC2626,stroke:#FF6B6B,color:#fff,stroke-width:3px
-    classDef complete fill:#059669,stroke:#00F0FF,color:#fff,stroke-width:2px
-    classDef ai fill:#0D0B2E,stroke:#00F0FF,color:#00F0FF,stroke-width:2px
+    classDef step1 fill:#7C3AED,stroke:#22D3EE,color:#fff,stroke-width:2px
+    classDef step2 fill:#7C3AED,stroke:#22D3EE,color:#fff,stroke-width:2px
+    classDef combat fill:#8B5CF6,stroke:#E879F9,color:#fff,stroke-width:3px
+    classDef step3 fill:#7C3AED,stroke:#22D3EE,color:#fff,stroke-width:2px
+    classDef decision fill:#0F0A2E,stroke:#E879F9,color:#22D3EE,stroke-width:2px
+    classDef boss fill:#9F1239,stroke:#FB7185,color:#fff,stroke-width:3px
+    classDef complete fill:#34D399,stroke:#22D3EE,color:#fff,stroke-width:2px
+    classDef ai fill:#0F0A2E,stroke:#22D3EE,color:#22D3EE,stroke-width:2px
+```
+
+</div>
+
+### ⚡ Sistema de Puntos
+
+<table align="center">
+<tr>
+<td align="center" width="33%">
+
+### ✅ GANA
+**+10 puntos**
+
+Respondiste mejor que tu rival
+
+</td>
+<td align="center" width="33%">
+
+### ❌ PIERDE
+**+5 puntos**
+
+Perdiste, pero aprendiste algo nuevo
+
+</td>
+<td align="center" width="33%">
+
+### ⚖️ SE ANULA
+**0 puntos**
+
+Empate — vuelve a intentar
+
+</td>
+</tr>
+</table>
+
+> 💡 **¿Por qué ganas puntos aunque pierdas?** Porque en HEROW, cada intento es aprendizaje. La derrota no cierra tu ruta, solo te impulsa a seguir.
+
+### 🔓 ¿Cómo se desbloquean los niveles?
+
+1. **Acumulas puntos** a través de combates de conocimiento
+2. **Al llegar a 100 puntos** → aparece el **Jefe Final: NoPuedo**
+3. **Vences al NoPuedo** completando un desafío práctico del mundo real
+4. **Desafío completado** → Se desbloquea un **nuevo nivel** con nuevas misiones
+5. **YessenIA** te orienta durante todo el camino sugiriendo portales, cursos y oportunidades
+6. **El ciclo se repite** → Más portales, más combates, más niveles desbloqueados
+
+<br/>
+
+---
+
+## 🗺️ Tu Aventura en 6 Pantallas
+
+<div align="center">
+
+```mermaid
+graph LR
+    A["PANTALLA 1\nEl Despertar"]:::s1 --> B["PANTALLA 2\nEl Multiverso"]:::s2
+    B --> C["PANTALLA 3\nCombate STEM"]:::s3
+    C --> D["PANTALLA 4\nEl NoPuedo"]:::s4
+    D --> E["PANTALLA 5\nModo Cooperativo"]:::s5
+    E --> F["PANTALLA 6\nLa Victoria"]:::s6
+
+    classDef s1 fill:#7C3AED,stroke:#22D3EE,color:#fff,stroke-width:2px
+    classDef s2 fill:#7C3AED,stroke:#22D3EE,color:#fff,stroke-width:2px
+    classDef s3 fill:#8B5CF6,stroke:#E879F9,color:#fff,stroke-width:2px
+    classDef s4 fill:#9F1239,stroke:#FB7185,color:#fff,stroke-width:3px
+    classDef s5 fill:#0D9488,stroke:#22D3EE,color:#fff,stroke-width:2px
+    classDef s6 fill:#0F0A2E,stroke:#E879F9,color:#22D3EE,stroke-width:2px
 ```
 
 </div>
 
 <br/>
 
-## 🌟 Las 3 Fases de tu Aventura
+---
+
+## 🎭 Pantalla 1: El Despertar
+
+**`Registro y Creación de Heroína`**
+
+> *Una interfaz oscura con destellos neón. En el centro, un orbe brillante cobra vida: es YessenIA, tu guía con IA.*
+
+### ¿Cómo funciona?
+
+Nada de formularios aburridos. **YessenIA** te hace solo **3 preguntas basadas en situaciones reales**:
+
+<div align="center">
+
+```
+  ╭──────────────────────────────────────────────────────────────────╮
+  │  🤖 YessenIA pregunta:                                          │
+  │                                                                  │
+  │  "El servidor de tu colegio se cayó y tu equipo debe             │
+  │   entregar un trabajo urgente. ¿Qué haces?"                     │
+  │                                                                  │
+  │  (a) 🔍 Buscas otra app para hacerlo                             │
+  │  (b) 👥 Organizas a todos para dividir el trabajo manual         │
+  │  (c) 🎨 Dibujas cómo debería verse el trabajo final              │
+  ╰──────────────────────────────────────────────────────────────────╯
+```
+
+</div>
+
+### La Magia ✨
+
+La IA procesa tus respuestas → la pantalla hace una **transición brillante** → y aparece tu **Avatar de Heroína**:
 
 <table align="center">
 <tr>
 <td align="center" width="33%">
 
-### 🎭 Fase 1
-**Crea tu Heroína**
+**🏗️ La Arquitecta de Soluciones**
 
-Regístrate, responde 3 preguntas sobre tus intereses y elige una **heroína peruana** como tu avatar.
-
-*Tu aventura comienza aquí* ✨
+*"Tu capacidad de encontrar herramientas demuestra Pensamiento Técnico"*
 
 </td>
 <td align="center" width="33%">
 
-### 🌀 Fase 2
-**Explora Portales STEM**
+**👑 La Capitana de Equipos**
 
-Elige temas que llamen tu atención. Entra a una sala y espera a tu rival.
-
-*El conocimiento es tu poder* ⚡
+*"Tu forma de organizar demuestra Liderazgo Técnico"*
 
 </td>
 <td align="center" width="33%">
 
-### ⚔️ Fase 3
-**Combate y Conquista**
+**🎨 La Visionaria Creativa**
 
-Rondas rápidas: elige, ordena, detecta errores y decide. ¡Acumula 100 puntos para desbloquear al Jefe Final!
-
-*Demuestra lo que sabes* 🔥
+*"Tu visión del resultado demuestra Diseño Estratégico"*
 
 </td>
 </tr>
@@ -123,81 +221,411 @@ Rondas rápidas: elige, ordena, detecta errores y decide. ¡Acumula 100 puntos p
 
 <br/>
 
-## 👾 El Jefe Final: **NoPuedo**
+---
+
+## 🌀 Pantalla 2: El Multiverso STEM
+
+**`Elección de Portales de Conocimiento`**
+
+> *Tu heroína está en el centro. Frente a ella flotan 3 Portales de Conocimiento — puertas dimensionales que brillan con energía STEM.*
 
 <div align="center">
 
-> *"NoPuedo es esa voz que te dice que no eres suficiente. En HEROW, la derrotas con hechos."*
+```mermaid
+graph TD
+    H["Tu Heroina"]:::hero --> P1
+    H --> P2
+    H --> P3
 
-</div>
+    P1["PORTAL 1\nUniverso del Codigo y Datos\nProgramacion - IA - Ciencia de Datos"]:::portal1
+    P2["PORTAL 2\nUniverso del Diseno y Creatividad\nUX/UI - Innovacion - Arte Digital"]:::portal2
+    P3["PORTAL 3\nUniverso de la Robotica y Sistemas\nHardware - Logica - Electronica"]:::portal3
 
-Cuando alcanzas **100 puntos**, aparece el Jefe Final: **NoPuedo**. Para vencerlo, debes completar un **desafío práctico** del mundo real:
-
-- 📝 Crear un perfil profesional
-- 🎨 Presentar un proyecto creativo
-- 💡 Resolver un caso práctico de tu área de interés
-
-**¡Vencer a NoPuedo significa que estás lista para el siguiente nivel!** 🚀
-
-<br/>
-
-## 🤖 YessenIA — Tu Guía con Inteligencia Artificial
-
-<div align="center">
-
-```
-  ╭─────────────────────────────────────────────────╮
-  │  🤖 YessenIA te orienta durante todo el camino  │
-  │                                                  │
-  │  → Sugiere portales, cursos y oportunidades      │
-  │    según tus intereses y lo que eliges explorar  │
-  │                                                  │
-  │  💡 La derrota no cierra tu ruta.                │
-  │     Solo abre nuevos caminos.                    │
-  ╰─────────────────────────────────────────────────╯
+    classDef hero fill:#0F0A2E,stroke:#22D3EE,color:#22D3EE,stroke-width:3px
+    classDef portal1 fill:#7C3AED,stroke:#8B5CF6,color:#fff,stroke-width:2px
+    classDef portal2 fill:#0891B2,stroke:#22D3EE,color:#fff,stroke-width:2px
+    classDef portal3 fill:#86198F,stroke:#E879F9,color:#fff,stroke-width:2px
 ```
 
 </div>
 
-**YessenIA** analiza tu progreso y te recomienda:
-- 🎓 Carreras y programas educativos
-- 📚 Cursos y recursos de aprendizaje
-- 🌐 Oportunidades reales en tu área de interés
-- 🗺️ Rutas personalizadas hacia tu futuro
+Tú eliges el portal que más te llama. Al tocarlo:
+
+> 🌀 *"Has entrado al Universo de los Datos. Prepárate para tus primeras misiones."*
+
+Entras a una sala y **esperas a tu rival**. Cuando ambas están listas, comienza el combate de conocimiento ⚔️
+
+**Nadie te obliga. Tú decides qué explorar.** Eso es autonomía real 💜
 
 <br/>
 
-## 🎨 Paleta de Colores
+---
+
+## ⚔️ Pantalla 3: Combate de Conocimiento
+
+**`Rondas Rápidas STEM — Acumula Puntos hasta 100`**
+
+> *Ambas jugadoras responden en vivo al mismo desafío. Rondas rápidas de elegir, ordenar, detectar errores y decidir. Cada respuesta cuenta.*
+
+### 🎯 Tipos de rondas:
+
+<table align="center">
+<tr>
+<td align="center" width="25%">
+
+**🔍 Elegir**
+
+Selecciona la respuesta correcta entre opciones
+
+</td>
+<td align="center" width="25%">
+
+**📋 Ordenar**
+
+Pon los pasos en el orden correcto
+
+</td>
+<td align="center" width="25%">
+
+**🐛 Detectar errores**
+
+Encuentra el fallo en el código o proceso
+
+</td>
+<td align="center" width="25%">
+
+**💡 Decidir**
+
+Toma la mejor decisión ante un escenario real
+
+</td>
+</tr>
+</table>
+
+### ⚡ Sistema de Puntos por Combate:
 
 <div align="center">
 
-| Color | Hex | Uso |
-|:---:|:---:|:---|
-| 🟣 | `#0D0B2E` | Fondo principal — Universo oscuro |
-| 🔵 | `#00F0FF` | Acento principal — Energía cyan |
-| 🟪 | `#A855F7` | Secundario — Portales púrpura |
-| 🩷 | `#D946EF` | Destacado — Magenta vibrante |
-| 💜 | `#6B21A8` | Profundo — Púrpura intenso |
-| 🟢 | `#059669` | Éxito — Logros completados |
+```
+  ╔══════════════════════════════════════════════════════════════╗
+  ║                                                              ║
+  ║   ✅ GANA        →  +10 puntos                               ║
+  ║   ❌ PIERDE      →  +5 puntos  (siempre sumas algo)          ║
+  ║   ⚖️ SE ANULA    →   0 puntos  (empate, vuelve a intentar)   ║
+  ║                                                              ║
+  ║   🎯 META: Acumula 100 puntos para desbloquear al NoPuedo    ║
+  ║                                                              ║
+  ╚══════════════════════════════════════════════════════════════╝
+```
+
+</div>
+
+### 🔄 El Ciclo de Combate:
+
+<div align="center">
+
+```mermaid
+graph TD
+    A["Entras a una sala de combate"]:::step --> B["Esperas a tu rival"]:::step
+    B --> C["Rondas rapidas de conocimiento"]:::combat
+    C --> D{"Resultado"}:::decision
+    D -->|"GANA +10 pts"| E["Tus puntos se acumulan"]:::points
+    D -->|"PIERDE +5 pts"| E
+    D -->|"ANULA 0 pts"| E
+    E --> F{"Llegaste a 100?"}:::decision
+    F -->|"Aun no"| A
+    F -->|"SI"| G["NoPuedo aparece!"]:::boss
+
+    classDef step fill:#7C3AED,stroke:#22D3EE,color:#fff,stroke-width:2px
+    classDef combat fill:#8B5CF6,stroke:#E879F9,color:#fff,stroke-width:3px
+    classDef points fill:#34D399,stroke:#22D3EE,color:#fff,stroke-width:2px
+    classDef decision fill:#0F0A2E,stroke:#E879F9,color:#22D3EE,stroke-width:2px
+    classDef boss fill:#9F1239,stroke:#FB7185,color:#fff,stroke-width:3px
+```
+
+</div>
+
+> 💡 **¿Por qué sumas puntos aunque pierdas?** Porque en HEROW la derrota no cierra tu ruta. Cada combate es una oportunidad de aprender. Puedes volver a combatir cuantas veces quieras hasta llegar a 100.
+
+### 🔐 ¿Es seguro el combate?
+
+- ✅ **No hay chat** entre jugadoras durante el combate
+- ✅ **Solo ven las preguntas y respuestas**, no información personal
+- ✅ **Ambas responden al mismo desafío** en simultáneo
+- ✅ **YessenIA modera** todo el proceso y detecta comportamiento inusual
+
+<br/>
+
+---
+
+## 👾 Pantalla 4: La Guarida del "NoPuedo"
+
+**`El Jefe Final — El Síndrome del Impostor`**
+
+> *El diseño se vuelve tenso. Colores rojizos y morados oscuros invaden la pantalla. El monstruo "NoPuedo" ocupa la mitad de la pantalla, arrojando burbujas de texto...*
+
+<div align="center">
+
+```
+  ╔═══════════════════════════════════════════════════════════╗
+  ║                                                           ║
+  ║              👾 N O P U E D O 👾                          ║
+  ║                                                           ║
+  ║     💬 "Eres muy chica para esto"                         ║
+  ║     💬 "La tecnología es muy difícil para ti"             ║
+  ║     💬 "Nadie te va a tomar en serio"                     ║
+  ║                                                           ║
+  ║     ████████████████████░░░░░ VIDA: 100%                  ║
+  ║                                                           ║
+  ╚═══════════════════════════════════════════════════════════╝
+```
+
+</div>
+
+### La Batalla:
+
+1. **YessenIA te dice:** *"Para vencerlo, estructura un proyecto para solucionar el problema de la basura en tu barrio"*
+2. **Tú escribes tu idea** → Lanzas un ataque → Pero solo le quitas la **mitad de la vida** al monstruo
+3. **La pantalla parpadea.** YessenIA advierte:
+
+<div align="center">
+
+> ⚠️ *"El NoPuedo es muy fuerte para vencerlo sola. Es hora de llamar a la caballería."*
+
+### Aparece un botón dorado brillante:
+
+```
+  ╭─────────────────────────────────────────╮
+  │                                         │
+  │   ✨🛡️  PEDIR AYUDA A UNA MENTORA  🛡️✨  │
+  │                                         │
+  ╰─────────────────────────────────────────╯
+```
+
+</div>
+
+> 🎯 **Mensaje clave:** Pedir ayuda NO es debilidad. Es la estrategia más poderosa que existe.
+
+<br/>
+
+---
+
+## 🤝 Pantalla 5: Modo Cooperativo Seguro
+
+**`La Interacción Asíncrona — Sin chats abiertos, 100% seguro`**
+
+> *La pantalla se divide en dos. De un lado, tu Avatar. Del otro, aparece bajando del cielo el Avatar iluminado de una Mentora (una chica mayor que ya completó sus propios retos).*
+
+### 🔐 ¿Por qué es seguro?
+
+<table align="center">
+<tr>
+<td align="center" width="50%">
+
+### 🔒 Lo que NO hay
+- ❌ Chat abierto entre menores
+- ❌ Contacto directo sin supervisión
+- ❌ Mensajes personalizados libres
+- ❌ Información personal visible
+
+</td>
+<td align="center" width="50%">
+
+### ✅ Lo que SÍ hay
+- ✅ Feedback predefinido por el sistema
+- ✅ Power-Ups de apoyo controlados por IA
+- ✅ Interacción asíncrona (no en tiempo real)
+- ✅ Meritocracia automatizada
+
+</td>
+</tr>
+</table>
+
+### Así funciona:
+
+<div align="center">
+
+```mermaid
+sequenceDiagram
+    participant U as 🦸‍♀️ Heroína (Usuaria)
+    participant S as 🤖 Sistema HEROW
+    participant M as 👑 Mentora (Nivel Referente)
+
+    U->>S: Presiona "Pedir ayuda a una Mentora"
+    S->>M: 🔔 Alerta: "Una heroína necesita tu ayuda"
+    Note over M: La mentora ganó este estatus<br/>al acumular 100+ XP
+    M->>S: Ve el proyecto de la heroína
+    S->>M: Le muestra 3 Power-Ups predefinidos
+    Note over M: Elige: "¡Tu lógica es excelente,<br/>confía en tu idea!" 💪
+    M->>S: Envía el Power-Up
+    S->>U: 💫 ¡Power-Up recibido!
+    Note over U: Los poderes se combinan en pantalla<br/>→ Ataque definitivo
+    U->>S: 💥 La barra de NoPuedo llega a CERO
+    Note over S: 🎆 NoPuedo se desintegra
+```
+
+</div>
+
+> 💜 **La mentora no fue elegida al azar.** Ganó ese estatus porque ella también venció a su propio NoPuedo. Eso es **meritocracia real**.
+
+<br/>
+
+---
+
+## 🏆 Pantalla 6: La Victoria y El Salto al Mundo Real
+
+**`El Puente entre el Juego y tu Futuro`**
+
+> *Pantalla de celebración llena de luz. YessenIA reaparece coronando a tu Avatar. Has vencido al NoPuedo.*
+
+### Tu recompensa:
+
+<div align="center">
+
+```
+  ╔═══════════════════════════════════════════════════════════════╗
+  ║                                                               ║
+  ║              🏅 CERTIFICADO DE PERFIL DE HABILIDADES          ║
+  ║                                                               ║
+  ║                  "Heroína de Datos Junior"                    ║
+  ║                                                               ║
+  ║   Habilidades validadas:                                      ║
+  ║   ✅ Pensamiento Técnico     ✅ Resolución de Problemas       ║
+  ║   ✅ Liderazgo Colaborativo  ✅ Comunicación Efectiva         ║
+  ║                                                               ║
+  ╚═══════════════════════════════════════════════════════════════╝
+```
+
+</div>
+
+### YessenIA te muestra el puente hacia tu futuro:
+
+> *"Como dominaste el Universo de los Datos, aquí tienes tus oportunidades desbloqueadas:"*
+
+<table align="center">
+<tr>
+<td align="center" width="50%">
+
+**📚 Formación**
+
+🎓 [Iniciar curso en Cisco Networking Academy]
+
+🌐 [Reclamar ruta introductoria en AWS]
+
+📖 [Acceder a cursos de Google para Educación]
+
+</td>
+<td align="center" width="50%">
+
+**🚀 Oportunidades**
+
+💼 [Pasantías tech para jóvenes en tu región]
+
+🤝 [Comunidad de heroínas HEROW]
+
+🌍 [Becas STEM para mujeres]
+
+</td>
+</tr>
+</table>
+
+### El Ciclo de Vida 🔄
+
+<div align="center">
+
+```
+  ╭──────────────────────────────────────────────────────────────────╮
+  │                                                                  │
+  │  🌟 "Has acumulado 100 puntos. ¡Felicidades, acabas de          │
+  │      desbloquear el MODO MENTORA!"                               │
+  │                                                                  │
+  │  👑 ¿Estás lista para ayudar a la siguiente heroína             │
+  │     a vencer su miedo?                                           │
+  │                                                                  │
+  │              ✨ [ ACTIVAR MODO MENTORA ] ✨                       │
+  │                                                                  │
+  ╰──────────────────────────────────────────────────────────────────╯
+```
+
+</div>
+
+> 🔁 **La heroína de hoy es la mentora de mañana.** Así se construye una comunidad que se sostiene sola.
+
+<br/>
+
+---
+
+## 🤖 YessenIA — El Corazón de HEROW
+
+**YessenIA** no es un chatbot cualquiera. Es una IA que te acompaña en **toda** tu aventura:
+
+| Momento | ¿Qué hace YessenIA? |
+|:---|:---|
+| 🎭 **Registro** | Te hace 3 preguntas situacionales para descubrir tu perfil |
+| 🌀 **Portales** | Te sugiere qué universo explorar según tus respuestas |
+| ⚔️ **Combates** | Modera los enfrentamientos y te da feedback tras cada ronda |
+| 🗺️ **Progreso** | Trackea tus puntos y te avisa cuando estás cerca del NoPuedo |
+| 👾 **Jefe Final** | Te guía en la batalla y te conecta con una mentora |
+| 🏆 **Victoria** | Te recomienda cursos, becas y oportunidades reales |
+| 👑 **Modo Mentora** | Te orienta para ser la mejor guía posible |
+
+<br/>
+
+---
+
+## 🎨 Paleta de Colores — Futurista y Sin Miedo
+
+> *Colores inspirados en el logo de HEROW: morado, rosado y celeste — una paleta futurista que dice "tu futuro es brillante y no debes tenerle miedo".*
+
+<div align="center">
+
+| Color | Hex | Nombre | Rol en HEROW |
+|:---:|:---:|:---:|:---|
+| 🟣 | `#8B5CF6` | **Morado Portal** | Portales dimensionales — donde tu futuro te espera |
+| 💜 | `#7C3AED` | **Morado Profundo** | Elementos principales — la base de tu aventura |
+| 🩷 | `#E879F9` | **Rosado Neón** | Destacados y energía — tu poder brilla |
+| 🔵 | `#22D3EE` | **Celeste Futuro** | Acentos y guías — el color de YessenIA y el camino |
+| ⬛ | `#0F0A2E` | **Noche Cósmica** | Fondo principal — el universo donde exploras |
+| 🟢 | `#34D399` | **Verde Logro** | Éxito — misiones completadas y nodos desbloqueados |
+| 🔴 | `#9F1239` | **Rojo NoPuedo** | Peligro — la guarida del Jefe Final |
+| 🟡 | `#FBBF24` | **Dorado Heroína** | Power-Ups, botones de logro y certificados |
 
 </div>
 
 <br/>
+
+---
 
 ## 🛠️ Stack Tecnológico
 
 <div align="center">
 
-[![Next.js](https://img.shields.io/badge/Next.js-0D0B2E?style=for-the-badge&logo=next.js&logoColor=00F0FF)](https://nextjs.org/)
-[![React](https://img.shields.io/badge/React-0D0B2E?style=for-the-badge&logo=react&logoColor=00F0FF)](https://react.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-0D0B2E?style=for-the-badge&logo=typescript&logoColor=A855F7)](https://www.typescriptlang.org/)
-[![Supabase](https://img.shields.io/badge/Supabase-0D0B2E?style=for-the-badge&logo=supabase&logoColor=059669)](https://supabase.com/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-0D0B2E?style=for-the-badge&logo=tailwindcss&logoColor=00F0FF)](https://tailwindcss.com/)
-[![Vercel](https://img.shields.io/badge/Vercel-0D0B2E?style=for-the-badge&logo=vercel&logoColor=D946EF)](https://vercel.com/)
+[![Next.js](https://img.shields.io/badge/Next.js-0F0A2E?style=for-the-badge&logo=next.js&logoColor=22D3EE)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-0F0A2E?style=for-the-badge&logo=react&logoColor=22D3EE)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-0F0A2E?style=for-the-badge&logo=typescript&logoColor=8B5CF6)](https://www.typescriptlang.org/)
+[![Supabase](https://img.shields.io/badge/Supabase-0F0A2E?style=for-the-badge&logo=supabase&logoColor=34D399)](https://supabase.com/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-0F0A2E?style=for-the-badge&logo=tailwindcss&logoColor=22D3EE)](https://tailwindcss.com/)
+[![Vercel](https://img.shields.io/badge/Vercel-0F0A2E?style=for-the-badge&logo=vercel&logoColor=E879F9)](https://vercel.com/)
 
 </div>
 
 <br/>
+
+---
+
+## 🔐 Seguridad y Ética en IA
+
+HEROW está diseñado con la protección de menores como **prioridad absoluta**:
+
+- 🛡️ **Sin chats abiertos** — Toda comunicación pasa por sistemas predefinidos
+- 🤖 **IA supervisada** — YessenIA filtra y modera todo el contenido
+- 🔒 **Datos protegidos** — Sin exposición de información personal entre usuarias
+- 📋 **Feedback controlado** — Las mentoras solo envían Power-Ups predefinidos
+- ✅ **Cumplimiento ético** — Principios de IA responsable integrados en el diseño
+
+<br/>
+
+---
 
 ## 🚀 Instalación y Desarrollo
 
@@ -218,32 +646,44 @@ cp .env.example .env.local
 npm run dev
 ```
 
-> 🌀 Abre [http://localhost:3000](http://localhost:3000) para ver la magia ✨
+> 🌀 Abre [http://localhost:3000](http://localhost:3000) para comenzar la aventura ✨
 
 <br/>
+
+---
 
 ## 📁 Estructura del Proyecto
 
 ```
 herow/
-├── 🌐 app/                  # Rutas y páginas (App Router)
-│   ├── (auth)/               # Autenticación y registro
-│   ├── (game)/               # Mecánicas de juego
-│   ├── (portals)/            # Portales de conocimiento
-│   └── layout.tsx            # Layout principal
-├── 🧩 components/            # Componentes reutilizables
-│   ├── ui/                   # Componentes de interfaz
-│   ├── game/                 # Componentes del juego
-│   └── ai/                   # Componentes de YessenIA
-├── 🎨 styles/                # Estilos globales
-├── 🔧 lib/                   # Utilidades y configuración
-├── 📊 types/                 # Tipos TypeScript
-└── 🌍 public/                # Assets estáticos
-    ├── heroines/             # Avatares de heroínas
-    └── portals/              # Assets de portales
+├── 🌐 app/                    # Rutas y páginas (App Router)
+│   ├── (auth)/                 # Pantalla 1: El Despertar
+│   ├── (portals)/              # Pantalla 2: El Multiverso STEM
+│   ├── (missions)/             # Pantalla 3: Mapa de Misiones
+│   ├── (boss)/                 # Pantalla 4: Guarida del NoPuedo
+│   ├── (coop)/                 # Pantalla 5: Modo Cooperativo
+│   ├── (victory)/              # Pantalla 6: Victoria
+│   └── layout.tsx              # Layout principal
+├── 🧩 components/
+│   ├── ui/                     # Componentes de interfaz
+│   ├── game/                   # Mecánicas del juego
+│   ├── ai/                     # Componentes de YessenIA
+│   └── avatars/                # Sistema de heroínas
+├── 🤖 lib/
+│   ├── ai/                     # Lógica de YessenIA
+│   ├── game-engine/            # Motor del juego
+│   └── safety/                 # Filtros de seguridad
+├── 🎨 styles/                  # Estilos globales
+├── 📊 types/                   # Tipos TypeScript
+└── 🌍 public/
+    ├── heroines/               # Avatares de heroínas
+    ├── portals/                # Assets de portales
+    └── bosses/                 # Assets del NoPuedo
 ```
 
 <br/>
+
+---
 
 ## 🤝 Contribuir
 
@@ -257,20 +697,25 @@ herow/
 
 <br/>
 
+---
+
 ## 👥 Equipo
 
 <div align="center">
 
-| Rol | Descripción |
+| Rol | Misión |
 |:---:|:---|
 | 🎨 **Diseño UX/UI** | Experiencias que enamoran a la Gen Z |
 | 💻 **Desarrollo** | Código que construye futuros |
 | 🤖 **IA & Datos** | YessenIA y análisis vocacional |
 | 🎮 **Game Design** | Mecánicas que enganchan y enseñan |
+| 🔐 **Seguridad** | Protección de menores como prioridad |
 
 </div>
 
 <br/>
+
+---
 
 ## 📄 Licencia
 
@@ -282,7 +727,7 @@ Este proyecto está bajo la licencia **MIT** — mira el archivo [LICENSE](./LIC
 
 <br/>
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:D946EF,25:A855F7,50:6B21A8,75:00F0FF,100:0D0B2E&height=120&section=footer" width="100%"/>
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:E879F9,25:8B5CF6,50:7C3AED,75:22D3EE,100:0F0A2E&height=120&section=footer" width="100%"/>
 
 <br/>
 
@@ -290,8 +735,10 @@ Este proyecto está bajo la licencia **MIT** — mira el archivo [LICENSE](./LIC
 
 *Porque tu futuro merece ser explorado, no improvisado.* 🌀
 
+*La heroína de hoy es la mentora de mañana.* 👑
+
 <br/>
 
-[![Visítanos](https://img.shields.io/badge/🌐_Visítanos-herow.app-00F0FF?style=for-the-badge&labelColor=0D0B2E)](https://herow.app)
+[![Visítanos](https://img.shields.io/badge/Vis%C3%ADtanos-herow.app-22D3EE?style=for-the-badge&labelColor=0F0A2E)](https://herow.app)
 
 </div>
