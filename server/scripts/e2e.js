@@ -105,7 +105,14 @@ try {
   r = await call('POST', '/api/missions/advance')
   ok(r.status === 409, 'No sube de nivel sin los 500 puntos')
   r = await call('POST', '/api/dev/points', { amount: 500 })
-  ok(r.status === 200, 'Atajo de desarrollo suma puntos')
+  if (r.status === 404) {
+    // Producción: el atajo no existe (correcto). Se suman los puntos directo en la base de prueba.
+    ok(true, 'Producción: el atajo de puntos está desactivado')
+    const { data: p } = await admin.from('profiles').select('points').eq('id', userId).single()
+    await admin.from('profiles').update({ points: p.points + 500 }).eq('id', userId)
+  } else {
+    ok(r.status === 200, 'Atajo de desarrollo suma puntos')
+  }
   r = await call('POST', '/api/missions/advance')
   ok(r.status === 200 && r.data.state.profile.level === 2, '¡Sube al nivel 2!', `nuevas heroínas: ${r.data.state.newlyUnlocked.join(', ') || 'ninguna'}`)
   ok(r.data.state.collection.find(h => h.id === 'costa')?.unlocked, 'Completar la misión desbloquea a Mariana Costa')

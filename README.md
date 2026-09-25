@@ -629,7 +629,7 @@ HEROW está diseñado con la protección de menores como **prioridad absoluta**:
 
 ## 🚀 Instalación y Desarrollo
 
-Requisitos: Node.js 20 o superior, un proyecto de Supabase, claves de Gemini y OpenAI, y un proyecto de Portal.
+Requisitos: Node.js 22 o superior, un proyecto de Supabase, claves de Gemini y OpenAI, y un proyecto de Portal.
 
 ```bash
 # 1️⃣ Instala todo (raíz, frontend y backend)
@@ -666,6 +666,20 @@ Con `DEV_TOOLS=true` en `server/.env`, la pantalla **Entrar** muestra botones pa
 | `npm run test:e2e --prefix server` | Prueba de punta a punta (registro, combate, misión, nivel, oportunidades, seguridad) |
 | `npm run test:live --prefix server` | Partida en vivo real entre 2 jugadoras por Portal |
 | `npm run portal:deploy` | Despliega `portal/portal.config.ts` |
+
+### ☁️ Producción
+
+| Parte | Servicio | URL |
+|---|---|---|
+| Frontend | Vercel (proyecto `herow`) | https://herow-six.vercel.app |
+| Backend | Railway (proyecto `herow`, servicio `herow-api`) | https://herow-api-production.up.railway.app |
+| Base de datos | Supabase | — |
+| Tiempo real | Portal | — |
+
+- **Backend:** `cd server && railway up --service herow-api`. Variables: `node tools/railway-env.mjs --frontend https://herow-six.vercel.app` (lee `server/.env`, nunca sube el archivo).
+- **Frontend:** `cd frontend && vercel deploy --prod`. Variables `VITE_*` en el proyecto de Vercel.
+- **Portal:** el dominio del frontend debe estar en los orígenes permitidos: `npx portal origins add https://herow-six.vercel.app`.
+- En producción `DEV_TOOLS=false`: no hay atajos de puntos ni botones de demo; se entra con usuario y contraseña.
 
 ### 🧠 Cómo funciona
 - **Niveles:** 500 / 1000 / 1500 puntos + una misión real (perfil profesional → primer post → mini proyecto) que revisa la IA + un paso en el mundo real (LinkedIn o portafolio, postular a una oportunidad) + vencer al NoPuedo.
