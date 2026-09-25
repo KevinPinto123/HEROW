@@ -600,12 +600,12 @@ sequenceDiagram
 
 <div align="center">
 
-[![Next.js](https://img.shields.io/badge/Next.js-0F0A2E?style=for-the-badge&logo=next.js&logoColor=22D3EE)](https://nextjs.org/)
-[![React](https://img.shields.io/badge/React-0F0A2E?style=for-the-badge&logo=react&logoColor=22D3EE)](https://react.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-0F0A2E?style=for-the-badge&logo=typescript&logoColor=8B5CF6)](https://www.typescriptlang.org/)
-[![Supabase](https://img.shields.io/badge/Supabase-0F0A2E?style=for-the-badge&logo=supabase&logoColor=34D399)](https://supabase.com/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-0F0A2E?style=for-the-badge&logo=tailwindcss&logoColor=22D3EE)](https://tailwindcss.com/)
-[![Vercel](https://img.shields.io/badge/Vercel-0F0A2E?style=for-the-badge&logo=vercel&logoColor=E879F9)](https://vercel.com/)
+[![React](https://img.shields.io/badge/React_19-0F0A2E?style=for-the-badge&logo=react&logoColor=22D3EE)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/Vite-0F0A2E?style=for-the-badge&logo=vite&logoColor=E879F9)](https://vite.dev/)
+[![Node.js](https://img.shields.io/badge/Node_+_Express-0F0A2E?style=for-the-badge&logo=nodedotjs&logoColor=34D399)](https://expressjs.com/)
+[![Gemini](https://img.shields.io/badge/Gemini-0F0A2E?style=for-the-badge&logo=googlegemini&logoColor=8B5CF6)](https://ai.google.dev/)
+[![OpenAI](https://img.shields.io/badge/OpenAI-0F0A2E?style=for-the-badge&logo=openai&logoColor=FFFFFF)](https://platform.openai.com/)
+[![Portal](https://img.shields.io/badge/Portal_Realtime-0F0A2E?style=for-the-badge&logoColor=22D3EE)](https://useportal.co/)
 
 </div>
 
@@ -629,24 +629,49 @@ HEROW está diseñado con la protección de menores como **prioridad absoluta**:
 
 ## 🚀 Instalación y Desarrollo
 
+Requisitos: Node.js 20 o superior, un proyecto de Supabase, claves de Gemini y OpenAI, y un proyecto de Portal.
+
 ```bash
-# 1️⃣ Clona el repositorio
-git clone https://github.com/tu-usuario/herow.git
+# 1️⃣ Instala todo (raíz, frontend y backend)
+npm run setup
 
-# 2️⃣ Entra al directorio
-cd herow
+# 2️⃣ Variables de entorno (ver los comentarios de cada archivo)
+cp server/.env.example server/.env              # claves secretas: Supabase, Gemini, OpenAI, Portal (sk_)
+cp frontend/.env.example frontend/.env.local    # solo públicas: Supabase publishable, Portal pk_
 
-# 3️⃣ Instala dependencias
-npm install
+# 3️⃣ Base de datos: pega supabase/schema.sql en Supabase → SQL Editor → Run (una sola vez)
 
-# 4️⃣ Configura las variables de entorno
-cp .env.example .env.local
-
-# 5️⃣ Ejecuta en modo desarrollo
+# 4️⃣ Levanta backend + frontend
 npm run dev
 ```
 
-> 🌀 Abre [http://localhost:3000](http://localhost:3000) para comenzar la aventura ✨
+> 🌀 Juego en [http://localhost:5173](http://localhost:5173) · API en [http://localhost:3001/api/health](http://localhost:3001/api/health)
+
+### 🎬 Demo
+Con `DEV_TOOLS=true` en `server/.env`, la pantalla **Entrar** muestra botones para las cuentas de demo (sin contraseña):
+
+- `herow_demo`: nivel 2, 980 pts, 7 heroínas. Lista para mostrar la misión del nivel 3, el jefe y la subida de nivel.
+- `herow_demo2`: la rival para una partida **en vivo** (ábrela en otro navegador o en `http://[::1]:5173`).
+
+`npm run demo:seed --prefix server` reinicia ambas cuentas antes de cada presentación. En el combate aparece **+50 demo** para sumar puntos rápido.
+
+### 🧰 Comandos
+
+| Comando | Qué hace |
+|---|---|
+| `npm run dev` | Backend (:3001) + frontend (:5173) |
+| `npm run assets` | Procesa las imágenes de `assets/raw/` a pixel art |
+| `npm run test:schema` | Prueba `supabase/schema.sql` en un Postgres local |
+| `npm run check:ai` | Verifica que Gemini/OpenAI respondan bien |
+| `npm run test:e2e --prefix server` | Prueba de punta a punta (registro, combate, misión, nivel, oportunidades, seguridad) |
+| `npm run test:live --prefix server` | Partida en vivo real entre 2 jugadoras por Portal |
+| `npm run portal:deploy` | Despliega `portal/portal.config.ts` |
+
+### 🧠 Cómo funciona
+- **Niveles:** 500 / 1000 / 1500 puntos + una misión real (perfil profesional → primer post → mini proyecto) que revisa la IA + un paso en el mundo real (LinkedIn o portafolio, postular a una oportunidad) + vencer al NoPuedo.
+- **Agente:** ajusta la dificultad según tu precisión, genera preguntas nuevas con IA, busca becas y cursos reales cada 12 h (verifica enlaces, resume, detecta convocatorias cerradas) y los ordena según tu desempeño.
+- **En vivo:** emparejamiento 1 vs 1 por portal con Portal; el servidor decide preguntas, tiempos y puntos. Solo hay reacciones, no chat.
+- **Seguridad:** sin email de las chicas, verificación de edad en el servidor, moderación de OpenAI en todo texto, RLS sin acceso directo del navegador a la base.
 
 <br/>
 
@@ -655,30 +680,24 @@ npm run dev
 ## 📁 Estructura del Proyecto
 
 ```
-herow/
-├── 🌐 app/                    # Rutas y páginas (App Router)
-│   ├── (auth)/                 # Pantalla 1: El Despertar
-│   ├── (portals)/              # Pantalla 2: El Multiverso STEM
-│   ├── (missions)/             # Pantalla 3: Mapa de Misiones
-│   ├── (boss)/                 # Pantalla 4: Guarida del NoPuedo
-│   ├── (coop)/                 # Pantalla 5: Modo Cooperativo
-│   ├── (victory)/              # Pantalla 6: Victoria
-│   └── layout.tsx              # Layout principal
-├── 🧩 components/
-│   ├── ui/                     # Componentes de interfaz
-│   ├── game/                   # Mecánicas del juego
-│   ├── ai/                     # Componentes de YessenIA
-│   └── avatars/                # Sistema de heroínas
-├── 🤖 lib/
-│   ├── ai/                     # Lógica de YessenIA
-│   ├── game-engine/            # Motor del juego
-│   └── safety/                 # Filtros de seguridad
-├── 🎨 styles/                  # Estilos globales
-├── 📊 types/                   # Tipos TypeScript
-└── 🌍 public/
-    ├── heroines/               # Avatares de heroínas
-    ├── portals/                # Assets de portales
-    └── bosses/                 # Assets del NoPuedo
+MusuqLab/
+├── 🖼️ assets/
+│   ├── README.md               # Qué imagen va en cada carpeta y con qué nombre
+│   └── raw/                    # Originales de ChatGPT (no se suben a git)
+├── 🌐 frontend/                # React + Vite
+│   ├── public/assets/          # Imágenes y audio procesados que usa el juego
+│   └── src/
+│       ├── views/              # Pantallas del juego
+│       ├── components/         # YessenIA, partículas, UI
+│       ├── data/               # Heroínas, portales, rutas de assets
+│       └── lib/api.js          # Cliente del backend
+├── 🤖 server/                  # Node + Express
+│   ├── scripts/                # generate-portal-keys.js
+│   └── src/
+│       ├── routes/             # /api/yessenia, /api/recommendations, /api/portal
+│       ├── services/           # IA (Gemini/OpenAI), moderación, scraping, tokens Portal
+│       └── data/               # Prompt de YessenIA, fuentes de recomendaciones
+└── 🛠️ tools/process-assets.mjs  # Pixelado y limpieza de imágenes
 ```
 
 <br/>
