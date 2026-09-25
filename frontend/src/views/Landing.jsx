@@ -1,234 +1,123 @@
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useState, useEffect } from 'react'
-import ParticlesBg from '../components/ParticlesBg'
+import HeroineCard from '../components/HeroineCard'
+import SceneBg from '../components/SceneBg'
+import { BACKGROUNDS, SPRITES } from '../data/assets'
+import { HEROINES, PORTALS } from '../data/heroines'
+import { usePlayer } from '../lib/usePlayer'
+import { play } from '../lib/sfx'
 
-const TESTIMONIALS = [
-  { text: '"Gracias a HEROW descubrí que me encanta la ciencia de datos. ¡Ahora estoy aprendiendo Python!"', name: 'Lucía, 16 años', emoji: '💻' },
-  { text: '"El NoPuedo me decía que no era suficiente, pero lo vencí con ayuda de mi mentora."', name: 'Valentina, 17 años', emoji: '💪' },
-  { text: '"Nunca pensé que diseñar apps pudiera ser mi futuro. HEROW me abrió los ojos."', name: 'Camila, 15 años', emoji: '🎨' },
-]
-
-const PARTNERS = [
-  { name: 'Cisco Networking Academy', icon: '🌐' },
-  { name: 'AWS Educate', icon: '☁️' },
-  { name: 'Google for Education', icon: '📚' },
-  { name: 'Laboratoria', icon: '💜' },
+const STEPS = [
+  { img: SPRITES.yessenia, title: '1. Despierta', text: 'YessenIA te hace 3 preguntas de situaciones reales y descubre qué portal STEM va contigo.' },
+  { img: '/assets/heroines/hero_curie.png', title: '2. Elige tu heroína', text: 'Juegas como una mujer real que cambió la ciencia y la tecnología: Marie Curie, Ada Lovelace, María Reiche…' },
+  { img: SPRITES.nopuedo, title: '3. Sube de nivel de verdad', text: 'Suma puntos en combates, cumple misiones reales como crear tu perfil profesional o publicar tu primer post, y vence al NoPuedo.' },
 ]
 
 export default function Landing() {
   const navigate = useNavigate()
+  const { session } = usePlayer()
   const [scrolled, setScrolled] = useState(false)
-  const [activeTestimonial, setActiveTestimonial] = useState(0)
+  const [filter, setFilter] = useState('all')
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50)
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
+    const onScroll = () => setScrolled(window.scrollY > 50)
+    window.addEventListener('scroll', onScroll)
+    return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveTestimonial(prev => (prev + 1) % TESTIMONIALS.length)
-    }, 4000)
-    return () => clearInterval(interval)
-  }, [])
-
-  const scrollToTestimonials = () => {
-    document.getElementById('conoce-mas')?.scrollIntoView({ behavior: 'smooth' })
+  const start = () => {
+    play('confirm')
+    navigate(session ? '/dashboard' : '/registro')
   }
 
+  const heroines = filter === 'all' ? HEROINES : HEROINES.filter(h => h.portal === filter)
+
   return (
-    <div className="landing-view">
-      {/* NAVBAR */}
+    <div className="landing-view landing-pixel">
       <nav className={`navbar ${scrolled ? 'scrolled' : ''}`}>
         <div className="container">
           <a href="#" className="nav-logo">
-            <div className="nav-logo-icon">🌀</div>
             <span className="nav-logo-text">HEROW</span>
           </a>
           <ul className="nav-links">
-            <li><a href="#conoce-mas">Conoce más</a></li>
             <li><a href="#como-funciona">Cómo funciona</a></li>
-            <li><a href="#testimonios">Historias</a></li>
+            <li><a href="#heroinas">Heroínas</a></li>
           </ul>
-          <button className="nav-cta" onClick={() => navigate('/onboarding')}>
-            Empezar
-          </button>
+          <div style={{ display: 'flex', gap: 8 }}>
+            {!session && <button className="nav-cta" style={{ background: 'transparent', border: '2px solid #fff' }} onClick={() => navigate('/entrar')}>Entrar</button>}
+            <button className="nav-cta" onClick={start}>{session ? 'Mi base' : 'Jugar'}</button>
+          </div>
         </div>
       </nav>
 
-      {/* HERO */}
-      <section className="hero">
-        <div className="hero-bg">
-          <div className="hero-orb hero-orb-1"></div>
-          <div className="hero-orb hero-orb-2"></div>
-          <div className="hero-orb hero-orb-3"></div>
-          <ParticlesBg count={35} />
-        </div>
-
-        <div className="hero-content">
-          <div className="hero-badge">
-            ✨ Para chicas de 15 a 17 años
-          </div>
-          <h1 className="hero-title">
-            <span className="line">No adivines tu futuro.</span>
-            <span className="line gradient-text">Descúbrelo.</span>
-          </h1>
-          <p className="hero-description">
-            Encuentra tu talento oculto, vence al monstruo del "No Puedo"
-            y desbloquea becas reales en tecnología.
+      <section className="title-hero">
+        <SceneBg src={BACKGROUNDS.title} dim={0.25} />
+        <div className="title-hero-inner">
+          <img src={SPRITES.yessenia} alt="YessenIA" className="pixel-img title-yessenia anim-float" />
+          <h1 className="title-logo">HEROW</h1>
+          <p className="title-sub">PORTALES DEL FUTURO</p>
+          <p className="title-desc">
+            No adivines tu futuro: descúbrelo jugando. Conviértete en una heroína real de la ciencia
+            y la tecnología, y vence al monstruo del <strong>No Puedo</strong>.
           </p>
-          <div className="hero-cta-group">
-            <button className="btn-primary btn-glow" onClick={() => navigate('/onboarding')}>
-              <span>🌀 Empezar mi Aventura</span>
-            </button>
-            <button className="btn-secondary" onClick={scrollToTestimonials}>
-              Conoce más ↓
-            </button>
+          <div className="title-actions">
+            <button className="pixel-btn gold big" onClick={start}>▶ Empezar aventura</button>
+            <a className="pixel-btn ghost big" href="#heroinas" onClick={() => play('blip')}>Ver heroínas</a>
           </div>
-
-          <div className="hero-stats">
-            <div className="hero-stat">
-              <div className="hero-stat-value gradient-text">3</div>
-              <div className="hero-stat-label">Portales STEM</div>
-            </div>
-            <div className="hero-stat">
-              <div className="hero-stat-value" style={{ color: 'var(--pink-neon)' }}>100%</div>
-              <div className="hero-stat-label">Seguro para menores</div>
-            </div>
-            <div className="hero-stat">
-              <div className="hero-stat-value" style={{ color: 'var(--cyan-future)' }}>∞</div>
-              <div className="hero-stat-label">Posibilidades</div>
-            </div>
-          </div>
-        </div>
-
-        <div className="hero-scroll-indicator" onClick={scrollToTestimonials}>
-          <span>Explora</span>
-          <div className="scroll-arrow"></div>
+          <p className="press-start">PARA CHICAS DE 15 A 17 AÑOS · 100% SEGURO</p>
         </div>
       </section>
 
-      {/* CONOCE MÁS — HOW IT WORKS */}
-      <section className="how-it-works" id="conoce-mas">
-        <div className="container">
-          <span className="section-tag tag-purple">🎮 Así funciona</span>
-          <h2 className="section-title">
-            Tu aventura en <span className="gradient-text">3 pasos</span>
-          </h2>
-          <p className="section-subtitle">
-            Nada de formularios aburridos. Solo tú, tu heroína y portales que brillan con conocimiento.
-          </p>
-          <div className="steps-grid" id="como-funciona">
-            <div className="step-card">
-              <div className="step-number step-number-1">1</div>
-              <div className="step-icon">🎭</div>
-              <h3 className="step-title">Crea tu heroína</h3>
-              <p className="step-description">
-                YessenIA te hace 3 preguntas reales. La IA descubre tu talento oculto y
-                te asigna un avatar épico como <strong>La Arquitecta de Soluciones</strong>.
-              </p>
-            </div>
-            <div className="step-card">
-              <div className="step-number step-number-2">2</div>
-              <div className="step-icon">🌀</div>
-              <h3 className="step-title">Explora portales STEM</h3>
-              <p className="step-description">
-                Elige entre Código, Diseño o Robótica. Entra a combates de conocimiento,
-                acumula puntos y desbloquea nuevos niveles.
-              </p>
-            </div>
-            <div className="step-card">
-              <div className="step-number step-number-3">3</div>
-              <div className="step-icon">🏆</div>
-              <h3 className="step-title">Vence y desbloquea</h3>
-              <p className="step-description">
-                Llega a 100 pts, vence al Jefe Final <strong>NoPuedo</strong> y desbloquea
-                becas reales en Cisco, AWS y más.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* TESTIMONIALS + PARTNERS */}
-      <section className="testimonials-section" id="testimonios">
-        <div className="container">
-          <span className="section-tag tag-pink">💜 Historias reales</span>
-          <h2 className="section-title" style={{ textAlign: 'center' }}>
-            Chicas que <span className="gradient-text">ya empezaron</span>
-          </h2>
-
-          <div className="testimonial-carousel">
-            {TESTIMONIALS.map((t, i) => (
-              <div
-                key={i}
-                className={`testimonial-card ${i === activeTestimonial ? 'active' : ''}`}
-              >
-                <span className="testimonial-emoji">{t.emoji}</span>
-                <p className="testimonial-text">{t.text}</p>
-                <span className="testimonial-name">{t.name}</span>
+      <section className="pixel-section" id="como-funciona">
+        <div className="pixel-section-inner">
+          <div className="center"><span className="pixel-tag">🎮 Así se juega</span></div>
+          <h2>Tu aventura en 3 pasos</h2>
+          <p className="lead">Nada de tests aburridos. Solo tú, tu heroína y portales que brillan con conocimiento.</p>
+          <div className="steps-pixel">
+            {STEPS.map(s => (
+              <div key={s.title} className="pixel-panel step-pixel">
+                <img src={s.img} alt="" className="pixel-img" />
+                <h3>{s.title}</h3>
+                <p>{s.text}</p>
               </div>
             ))}
-            <div className="testimonial-dots">
-              {TESTIMONIALS.map((_, i) => (
-                <button
-                  key={i}
-                  className={`testimonial-dot ${i === activeTestimonial ? 'active' : ''}`}
-                  onClick={() => setActiveTestimonial(i)}
-                />
-              ))}
-            </div>
-          </div>
-
-          <div className="partners-section">
-            <p className="partners-label">Oportunidades que puedes desbloquear</p>
-            <div className="partners-grid">
-              {PARTNERS.map((p, i) => (
-                <div key={i} className="partner-card">
-                  <span className="partner-icon">{p.icon}</span>
-                  <span className="partner-name">{p.name}</span>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       </section>
 
-      {/* FINAL CTA */}
-      <section className="cta-section">
-        <div className="container">
-          <div className="cta-content">
-            <h2 className="cta-title">
-              <span className="gradient-text">Tu futuro</span> no se improvisa.
-              <br />Se descubre jugando.
-            </h2>
-            <p className="cta-description">
-              Únete a HEROW. Sin miedo. Sin incertidumbre. Solo tú y tu potencial.
-            </p>
-            <button className="btn-primary btn-glow btn-xl" onClick={() => navigate('/onboarding')}>
-              <span>🌀 Empezar mi Aventura</span>
+      <section className="pixel-section" id="heroinas">
+        <div className="pixel-section-inner">
+          <div className="center"><span className="pixel-tag">⚡ Mujeres reales</span></div>
+          <h2>Elige quién quieres ser</h2>
+          <p className="lead">Cada heroína existió de verdad. Su historia es tu poder dentro del juego.</p>
+          <div className="portal-filter">
+            <button className={`pixel-btn small ${filter === 'all' ? 'gold' : 'ghost'}`} onClick={() => { play('blip'); setFilter('all') }}>
+              Todas
             </button>
+            {Object.values(PORTALS).map(p => (
+              <button
+                key={p.id}
+                className={`pixel-btn small ${filter === p.id ? 'gold' : 'ghost'}`}
+                onClick={() => { play('blip'); setFilter(p.id) }}
+              >
+                {p.emoji} {p.name}
+              </button>
+            ))}
+          </div>
+          <div className="heroine-gallery">
+            {heroines.map(h => <HeroineCard key={h.id} heroine={h} />)}
+          </div>
+          <div className="center" style={{ marginTop: 48 }}>
+            <button className="pixel-btn gold big" onClick={start}>▶ Quiero ser una heroína</button>
           </div>
         </div>
       </section>
 
-      {/* FOOTER */}
       <footer className="footer">
         <div className="container">
-          <div className="footer-content">
-            <div className="footer-brand">
-              <div className="nav-logo-icon">🌀</div>
-              <span className="nav-logo-text">HEROW</span>
-            </div>
-            <ul className="footer-links">
-              <li><a href="#conoce-mas">Cómo funciona</a></li>
-              <li><a href="#testimonios">Historias</a></li>
-            </ul>
-          </div>
           <div className="footer-bottom">
-            <p>Hecho con <span className="footer-heart">💜</span> por el equipo HEROW — Portales del Futuro</p>
-            <p style={{ marginTop: '8px', fontSize: '0.7rem' }}>🔐 Plataforma segura para menores de edad</p>
+            <p>Hecho con 💜 por el equipo HEROW · MusuqLab</p>
+            <p style={{ marginTop: 8, fontSize: '0.8rem' }}>🔐 Sin chats abiertos · Sin contacto directo entre jugadoras</p>
           </div>
         </div>
       </footer>
