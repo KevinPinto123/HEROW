@@ -1,0 +1,16 @@
+node_modules
+dist
+
+# Secretos: nunca subir
+.env
+.env.*
+!.env.example
+
+# Originales de ChatGPT (pesados); solo se suben los procesados en frontend/public/assets
+assets/raw/**/*.png
+assets/raw/**/*.jpg
+assets/raw/**/*.jpeg
+assets/raw/**/*.webp
+
+.DS_Store
+*.log
