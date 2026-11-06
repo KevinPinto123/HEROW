@@ -27,8 +27,15 @@ const write = (list) => {
   }
 }
 
-/** ¿Es un fallo de red o del servidor (reintentable) y no un dato mal escrito? */
-const isRetryable = (err) => err instanceof ApiError && (err.status === 0 || err.status >= 500)
+/**
+ * ¿Es un fallo de red o del servidor (reintentable) y no un dato mal escrito?
+ *
+ * El 404 cuenta: significa que el backend desplegado todavía no tiene la ruta
+ * /api/leads. Mejor guardar el correo y reintentar que perder un contacto y
+ * mostrarle un error a alguien en plena feria.
+ */
+const isRetryable = (err) =>
+  err instanceof ApiError && (err.status === 0 || err.status === 404 || err.status >= 500)
 
 export const pendingLeads = () => read().length
 
