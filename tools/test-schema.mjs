@@ -25,6 +25,16 @@ console.log('✅ apply_round suma puntos y rachas correctamente')
 
 const bad = await db.query(`insert into public.profiles (id, username, birth_year) values (gen_random_uuid(), 'X Y', 2010)`).catch(e => e.message)
 console.log('✅ rechaza username inválido:', String(bad).slice(0, 60))
+// ---------- Waitlist / leads ----------
+await db.query(`insert into public.leads (email, name, org, role) values ('directora@colegio.edu.pe', 'Ana', 'IE 123', 'colegio')`)
+const dup = await db.query(`insert into public.leads (email, role) values ('directora@colegio.edu.pe', 'empresa')`).catch(e => e.message)
+if (!/duplicate|unique/i.test(String(dup))) throw new Error('leads acepta correos repetidos')
+const rolMalo = await db.query(`insert into public.leads (email, role) values ('x@y.com', 'inventado')`).catch(e => e.message)
+if (!/check constraint/i.test(String(rolMalo))) throw new Error('leads acepta tipos de contacto inventados')
+const { rows: [lead] } = await db.query(`select role, source from public.leads where email = 'directora@colegio.edu.pe'`)
+if (lead.role !== 'colegio' || lead.source !== 'landing') throw new Error('leads guarda mal los valores por defecto')
+console.log('✅ leads: correo único, tipo validado y origen por defecto')
+
 const { rows: rls } = await db.query(`select relname from pg_class where relnamespace = 'public'::regnamespace and relkind = 'r' and not relrowsecurity`)
 if (rls.length) throw new Error('Tablas sin RLS: ' + rls.map(r => r.relname))
 console.log('✅ RLS activo en todas las tablas')

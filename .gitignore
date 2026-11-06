@@ -11,6 +11,7 @@ assets/raw/**/*.png
 assets/raw/**/*.jpg
 assets/raw/**/*.jpeg
 assets/raw/**/*.webp
+assets/raw/**/*.svg
 
 .DS_Store
 *.log

@@ -23,6 +23,9 @@ const schema = z.object({
 
   SCRAPE_CACHE_HOURS: z.coerce.number().positive().default(12),
 
+  // Token para descargar los leads en CSV (GET /api/leads/export). Vacío = ruta apagada.
+  LEADS_ADMIN_TOKEN: optional,
+
   SUPABASE_URL: optional,
   SUPABASE_PUBLISHABLE_KEY: optional,
   SUPABASE_SECRET_KEY: optional,
@@ -57,6 +60,7 @@ export const config = {
     secretKey: env.PORTAL_SECRET_KEY,
   },
   scrapeCacheMs: env.SCRAPE_CACHE_HOURS * 60 * 60 * 1000,
+  leadsAdminToken: env.LEADS_ADMIN_TOKEN,
   devTools: env.DEV_TOOLS === 'true' && process.env.NODE_ENV !== 'production',
   supabase: {
     url: env.SUPABASE_URL,
@@ -73,5 +77,6 @@ export const features = {
   portalAuth: Boolean(config.portal.privateKeyPem),
   portalSecret: Boolean(env.PORTAL_SECRET_KEY),
   supabase: Boolean(config.supabase.url && config.supabase.secretKey),
+  leadsExport: Boolean(config.leadsAdminToken),
   devTools: config.devTools,
 }

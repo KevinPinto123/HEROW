@@ -166,3 +166,29 @@ $$;
 -- Solo el backend (service_role) puede llamarla.
 revoke all on function public.apply_round(uuid, text, boolean, boolean, int, int) from public, anon, authenticated;
 grant execute on function public.apply_round(uuid, text, boolean, boolean, int, int) to service_role;
+
+-- ---------- Waitlist / leads (feria, colegios, aliados) ----------
+-- Personas adultas que dejan su contacto en la landing: colegios, empresas,
+-- inversores, docentes, familias. NO son jugadoras (esas usan auth.users).
+create table if not exists public.leads (
+  id         uuid primary key default gen_random_uuid(),
+  email      text not null unique check (char_length(email) between 5 and 160),
+  name       text check (char_length(name) <= 80),
+  org        text check (char_length(org) <= 120),
+  role       text not null default 'otro'
+               check (role in ('colegio', 'empresa', 'inversor', 'docente', 'familia', 'estudiante', 'otro')),
+  phone      text check (char_length(phone) <= 40),
+  message    text check (char_length(message) <= 500),
+  source     text not null default 'landing' check (char_length(source) <= 40),
+  -- Cuándo aceptó que le escribamos (Ley 29733). Null = registrado antes de pedirlo.
+  consent_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create index if not exists leads_role_created on public.leads (role, created_at desc);
+-- Para instalaciones que crearon la tabla antes de que existiera el consentimiento.
+alter table public.leads add column if not exists consent_at timestamptz;
+
+-- Mismo criterio que el resto: RLS activo y sin políticas.
+-- Solo el backend (clave secreta) puede leer y escribir aquí.
+alter table public.leads enable row level security;

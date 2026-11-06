@@ -42,6 +42,10 @@ export const api = {
 
   register: (data) => post('/api/auth/register', data),
 
+  /** Waitlist pública: colegios, aliados, inversores, docentes, familias. */
+  joinWaitlist: (data) => post('/api/leads', data),
+  waitlistCount: () => request('/api/leads/count'),
+
   me: () => request('/api/me'),
   dashboard: () => request('/api/me/dashboard'),
   guide: () => request('/api/me/guide'),

@@ -11,6 +11,7 @@ import Landing from './views/Landing'
 const Awakening = lazy(() => import('./views/Awakening'))
 const Boss = lazy(() => import('./views/Boss'))
 const Combat = lazy(() => import('./views/Combat'))
+const Legal = lazy(() => import('./views/Legal'))
 const Dashboard = lazy(() => import('./views/Dashboard'))
 const LiveCombat = lazy(() => import('./views/LiveCombat'))
 const Login = lazy(() => import('./views/Login'))
@@ -75,6 +76,10 @@ export default function App() {
             <Route path="/vivo" element={<Protected><LiveCombat /></Protected>} />
             <Route path="/mision" element={<Protected><Mission /></Protected>} />
             <Route path="/boss" element={<Protected><Boss /></Protected>} />
+            {/* Páginas legales: públicas, sin sesión. */}
+            <Route path="/privacidad" element={<Legal doc="privacidad" />} />
+            <Route path="/terminos" element={<Legal doc="terminos" />} />
+            <Route path="/seguridad" element={<Legal doc="seguridad" />} />
             <Route path="/onboarding" element={<Navigate to="/registro" replace />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

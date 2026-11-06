@@ -7,6 +7,7 @@ import { authRouter } from './routes/auth.js'
 import { combatRouter } from './routes/combat.js'
 import { meRouter } from './routes/me.js'
 import { missionsRouter } from './routes/missions.js'
+import { leadsRouter } from './routes/leads.js'
 import { opportunitiesRouter } from './routes/opportunities.js'
 import { liveRouter } from './routes/live.js'
 import { jwksRouter, portalRouter } from './routes/portal.js'
@@ -41,6 +42,7 @@ app.use('/api/portal', limit(30), requireUser, portalRouter)
 app.use('/api/live', limit(120), requireUser, liveRouter)
 app.use('/api/yessenia', limit(20), optionalUser, yesseniaRouter)
 app.use('/api/recommendations', limit(10), recommendationsRouter)
+app.use('/api/leads', limit(30), leadsRouter)
 
 // Solo desarrollo: sumar puntos para probar subidas de nivel sin jugar 50 rondas.
 if (config.devTools) {

@@ -667,6 +667,96 @@ Con `DEV_TOOLS=true` en `server/.env`, la pantalla **Entrar** muestra botones pa
 | `npm run test:live --prefix server` | Partida en vivo real entre 2 jugadoras por Portal |
 | `npm run portal:deploy` | Despliega `portal/portal.config.ts` |
 
+### 🌀 Waitlist (colegios, aliados, inversores)
+
+La landing tiene la sección **Súmate al portal** (`#sumate`): un formulario público que
+guarda contactos en la tabla `leads`. Pensado para ferias y demos.
+
+| Qué | Dónde |
+|---|---|
+| Formulario | [`frontend/src/components/WaitlistForm.jsx`](frontend/src/components/WaitlistForm.jsx) |
+| Envío con cola offline | [`frontend/src/lib/leads.js`](frontend/src/lib/leads.js) |
+| API | `POST /api/leads` · `GET /api/leads/count` · `GET /api/leads/export?token=…` |
+| Tabla | `public.leads` (RLS activo, sin políticas: solo el backend escribe) |
+
+- **Sin internet no se pierde nada.** Si el backend no responde, el correo se guarda en el
+  navegador y se reenvía solo cuando vuelve la conexión.
+- **Anti-spam** con campo trampa invisible, sin captcha ni servicios externos.
+- **Correo repetido** no da error: completa los datos que falten.
+- **Exportar los contactos** después del evento: pon `LEADS_ADMIN_TOKEN` en `server/.env` y abre
+  `PUBLIC_URL/api/leads/export?token=EL_TOKEN` → descarga un CSV que Excel abre con tildes.
+
+> ⚠️ Para que funcione en producción, el backend debe aceptar al frontend:
+> `CORS_ORIGIN=https://herow-six.vercel.app` en Railway y `VITE_API_URL=https://herow-api-production.up.railway.app` en Vercel.
+
+### 🏅 Carrusel de aliados
+
+Banda de logos en bucle infinito, justo debajo del hero. Datos en
+[`frontend/src/data/aliados.js`](frontend/src/data/aliados.js), componente en
+[`frontend/src/components/Aliados.jsx`](frontend/src/components/Aliados.jsx).
+
+Para añadir un logo: pon el SVG en `frontend/public/assets/logos/` y agrégalo a la lista.
+La velocidad se ajusta sola según cuántos haya. `escala` afina uno concreto si se ve
+descompensado; `url` vacío = no es clicable.
+
+Cómo funciona el bucle: la lista se pinta **dos veces** y la cinta se desplaza `-50%`.
+El espacio entre logos va como `margin-right` de cada chip, **no** como `gap` de la cinta —
+con `gap` la mitad del track no equivale a una copia completa y el bucle salta medio hueco
+en cada vuelta.
+
+> 🎨 Los logos van **sin fondo**, directo sobre la banda oscura. Para que todos se lean
+> hubo que recolorear **MovilMax** (su azul marino `#1B265B` era invisible → sus trazos
+> oscuros pasan a blanco, el icono celeste queda intacto). AWS usa su PNG oficial con
+> texto blanco, recortado para quitarle el relleno transparente. Los originales están en
+> `assets/raw/logos/`.
+>
+> Si añades un logo oscuro, revisa su luminosidad antes: lo que no se ve sobre `--ink`
+> hay que aclararlo igual.
+
+**La unión con el hero** es un degradado, no un corte. Tres piezas que van juntas:
+
+1. `.title-hero::after` — degradado vertical que disuelve la ciudad pixel en `--ink`,
+   sólido desde el 94% para que la imagen nunca asome por abajo.
+2. `.aliados-banda` con `margin-top: -2px` — cubre la última fila de la imagen. Sin esto
+   aparece una línea brillante de lado a lado en la unión.
+3. El mismo halo morado en los dos (`radial-gradient`), anclado abajo en el hero y arriba
+   en la banda, para que el resplandor cruce sin escalón.
+
+La banda además termina en `#150E3D`, el color de la sección siguiente, así que tampoco
+tiene borde inferior.
+
+### 👋 Sección "Nosotros"
+
+El equipo y el premio salen en `#nosotros`, justo antes del formulario. Los datos están en
+[`frontend/src/data/equipo.js`](frontend/src/data/equipo.js): nombre, rol, detalle, foto y
+`linkedin` (vacío = no se muestra el enlace).
+
+Las fotos van en `frontend/public/assets/nosotros/` en **.webp**. Los originales pesados se
+guardan en `assets/raw/nosotros/`, que git ignora y no se despliega. Para procesar una foto nueva:
+
+```bash
+node -e "require('sharp')('entrada.png').resize(440,440,{fit:'cover',position:'top'}).webp({quality:82}).toFile('frontend/public/assets/nosotros/nombre.webp')"
+```
+
+### ⚖️ Páginas legales y footer
+
+| Ruta | Qué contiene |
+|---|---|
+| `/privacidad` | Qué datos se piden, con quién se procesan, moderación, derechos (Ley 29733) |
+| `/terminos` | Reglas de uso, límites de la IA, oportunidades de terceros, licencia |
+| `/seguridad` | Para apoderados y docentes: por qué no hay chats ni contacto directo |
+
+Los tres textos viven en [`frontend/src/data/legal.js`](frontend/src/data/legal.js) y se
+pintan con [`frontend/src/views/Legal.jsx`](frontend/src/views/Legal.jsx). El footer es
+[`frontend/src/components/Footer.jsx`](frontend/src/components/Footer.jsx) y se usa en la
+landing y en las páginas legales.
+
+> 📇 **Correo y redes se cambian en un solo sitio:** [`frontend/src/data/contacto.js`](frontend/src/data/contacto.js).
+> Lo que dejes vacío simplemente no aparece en la web — nada se rompe.
+
+El formulario de waitlist pide **consentimiento explícito** antes de guardar el correo y
+registra la fecha en `leads.consent_at`, que también sale en el CSV de exportación.
+
 ### ☁️ Producción
 
 | Parte | Servicio | URL |
@@ -754,7 +844,9 @@ MusuqLab/
 
 <div align="center">
 
-Este proyecto está bajo la licencia **MIT** — mira el archivo [LICENSE](./LICENSE) para más detalles.
+**Proyecto privado.** El código, la marca HEROW, el arte y los textos pertenecen al equipo
+MusuqLab. Todos los derechos reservados. No está permitido copiar, distribuir ni reutilizar
+este material sin permiso por escrito.
 
 ---
 
