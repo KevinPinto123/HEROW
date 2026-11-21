@@ -313,3 +313,21 @@ test('ciencia flash: datos completos y sin repetir', async () => {
   const trues = FACTS.filter(f => f.answer).length
   assert.ok(trues > FACTS.length * 0.35 && trues < FACTS.length * 0.65, 'mezcla equilibrada de verdaderos y falsos')
 })
+
+test('supabase: reintenta una vez solo ante "JWT issued at future"', async () => {
+  const { fetchWithClockRetry } = await import('../src/services/supabase.js')
+  const reply = (status, body) => new Response(body, { status })
+  let calls = 0
+  const skew = async () => (++calls === 1 ? reply(401, '{"message":"JWT issued at future"}') : reply(200, '[]'))
+  const r1 = await fetchWithClockRetry('x', {}, skew)
+  assert.equal(r1.status, 200)
+  assert.equal(calls, 2)
+  calls = 0
+  const denied = async () => { calls++; return reply(401, '{"message":"invalid JWT"}') }
+  assert.equal((await fetchWithClockRetry('x', {}, denied)).status, 401)
+  assert.equal(calls, 1, 'otros 401 no se reintentan')
+  calls = 0
+  const ok = async () => { calls++; return reply(200, '[]') }
+  await fetchWithClockRetry('x', {}, ok)
+  assert.equal(calls, 1)
+})
