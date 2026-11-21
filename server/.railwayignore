@@ -1,0 +1,6 @@
+# Nunca subir secretos ni dependencias locales a Railway
+.env
+.env.*
+!.env.example
+node_modules
+*.log

@@ -1,0 +1,19 @@
+{
+  "name": "herow",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "setup": "npm install && cd frontend && npm install && cd ../server && npm install",
+    "dev": "concurrently -n api,web -c magenta,cyan \"npm run dev --prefix server\" \"npm run dev --prefix frontend\"",
+    "build": "npm run build --prefix frontend",
+    "lint": "npm run lint --prefix frontend",
+    "assets": "node tools/process-assets.mjs",
+    "check:ai": "npm run check:ai --prefix server",
+    "test:schema": "node tools/test-schema.mjs"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
+    "concurrently": "^10.0.5",
+    "sharp": "^0.35.4"
+  }
+}

@@ -1,146 +1,219 @@
-import { useState, useEffect } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
-import ParticlesBg from '../components/ParticlesBg'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
+import SceneBg from '../components/SceneBg'
+import { BACKGROUNDS } from '../data/assets'
+import { HEROINES, PORTALS, getHeroine } from '../data/heroines'
+import { api } from '../lib/api'
+import { usePlayer } from '../lib/usePlayer'
+import { play } from '../lib/sfx'
+
+const ROUND_LABELS = { elegir: '🔍 Elegir', ordenar: '📋 Ordenar', error: '🐛 Detectar el error', decidir: '💡 Decidir' }
+const DIFFICULTY = ['', '★', '★★', '★★★']
+const OUTCOME_TEXT = {
+  win: { title: '¡Ronda ganada!', color: 'var(--green-logro)' },
+  lose: { title: 'Ronda perdida', color: '#FB7185' },
+  tie: { title: 'Ronda anulada', color: 'var(--gold)' },
+}
 
 export default function Combat() {
   const navigate = useNavigate()
   const location = useLocation()
-  const portalName = location.state?.portal || 'STEM'
-  
-  const [points, setPoints] = useState(85) // Start near 100 to show Boss transition quickly
-  const [roundStep, setRoundStep] = useState(0) // 0=waiting, 1=question, 2=result
-  const [selectedAnswer, setSelectedAnswer] = useState(null)
-  const [rivalAnswered, setRivalAnswered] = useState(false)
+  const { state, setState, refresh } = usePlayer()
+  const hero = getHeroine(state.profile.heroineId) ?? HEROINES[0]
+  const portal = PORTALS[location.state?.portal ?? state.profile.portalId ?? hero.portal] ?? PORTALS.code
 
-  // Simulation: Wait for rival
+  const [roundNo, setRoundNo] = useState(0)
+  const [phase, setPhase] = useState('matching') // matching | question | waiting | result | error
+  const [round, setRound] = useState(null)
+  const [picked, setPicked] = useState(null)
+  const [rivalDone, setRivalDone] = useState(false)
+  const [result, setResult] = useState(null)
+  const [error, setError] = useState('')
+  const startedAt = useRef(0)
+  const sent = useRef(false)
+
+  const rival = round ? getHeroine(round.rival.id) : null
+
+  // Pide una ronda nueva al servidor.
   useEffect(() => {
-    if (roundStep === 0) {
-      const timer = setTimeout(() => setRoundStep(1), 2000)
-      return () => clearTimeout(timer)
-    }
-  }, [roundStep])
+    if (phase !== 'matching') return
+    let cancelled = false
+    const minWait = new Promise(r => setTimeout(r, roundNo === 0 ? 1500 : 600))
+    Promise.all([api.combatStart(portal.id), minWait])
+      .then(([r]) => {
+        if (cancelled) return
+        sent.current = false
+        startedAt.current = performance.now()
+        setRound(r)
+        setPhase('question')
+      })
+      .catch(err => {
+        if (cancelled) return
+        setError(err.message)
+        setPhase('error')
+      })
+    return () => { cancelled = true }
+  }, [phase, roundNo, portal.id])
 
-  // Simulation: Rival answers after a delay
+  const send = useCallback(async (choice) => {
+    if (sent.current || !round) return
+    sent.current = true
+    setPicked(choice)
+    setPhase('waiting')
+    play(choice === null ? 'lose' : 'select')
+    const elapsed = performance.now() - startedAt.current
+    // Suspenso: si la rival aún no respondía, esperamos un poco (máx. 1.2 s).
+    const suspense = new Promise(r => setTimeout(r, Math.min(Math.max(0, round.rival.answerAfterMs - elapsed), 1200)))
+    try {
+      const [res] = await Promise.all([api.combatAnswer(round.roundId, choice), suspense])
+      setRivalDone(true)
+      setResult(res)
+      setPhase('result')
+      setState(s => ({ ...s, profile: res.profile, next: s.next && res.next ? { ...s.next, ...res.next } : s.next }))
+      play(res.outcome === 'win' ? 'win' : res.outcome === 'lose' ? 'lose' : 'blip')
+      if (res.outcome !== 'tie') setTimeout(() => play('hit'), 120)
+      if (res.newlyUnlocked?.length) setTimeout(() => play('confirm'), 700)
+    } catch (err) {
+      setError(err.message)
+      setPhase('error')
+    }
+  }, [round, setState])
+
+  // Tiempo de la rival y límite de la pregunta.
   useEffect(() => {
-    if (roundStep === 1) {
-      const timer = setTimeout(() => setRivalAnswered(true), 3000)
-      return () => clearTimeout(timer)
-    }
-  }, [roundStep])
+    if (phase !== 'question' || !round) return
+    const rivalTimer = setTimeout(() => { setRivalDone(true); play('blip') }, round.rival.answerAfterMs)
+    const limitTimer = setTimeout(() => send(null), round.timeLimitMs)
+    return () => { clearTimeout(rivalTimer); clearTimeout(limitTimer) }
+  }, [phase, round, send])
 
-  const handleAnswer = (index) => {
-    if (selectedAnswer !== null) return
-    setSelectedAnswer(index)
-    
-    setTimeout(() => {
-      setRoundStep(2)
-      setPoints(prev => prev + 10) // Win points!
-    }, 1500)
+  const nextRound = () => {
+    play('confirm')
+    setRoundNo(n => n + 1)
+    setPicked(null)
+    setRivalDone(false)
+    setResult(null)
+    setRound(null)
+    setPhase('matching')
   }
 
-  const handleNext = () => {
-    if (points >= 100) {
-      navigate('/boss')
-    } else {
-      // Reset for next round
-      setRoundStep(0)
-      setSelectedAnswer(null)
-      setRivalAnswered(false)
-    }
+  const answerClass = (i) => {
+    if (phase !== 'result') return picked === i ? 'picked' : ''
+    if (i === result.correctIndex) return 'correct'
+    if (i === picked) return 'wrong'
+    return ''
   }
+
+  const p = state.profile
+  const next = state.next
+  const pct = next ? Math.min(100, Math.round((p.points / next.pointsNeeded) * 100)) : 100
+  const hit = result?.outcome === 'win' ? 'rival' : result?.outcome === 'lose' ? 'hero' : null
 
   return (
-    <div className="combat-app-view">
-      <ParticlesBg count={20} />
-      
-      {/* Header bar */}
-      <div className="combat-header-bar">
-        <button className="back-btn-small" onClick={() => navigate('/multiverso')}>← Abandonar</button>
-        <div className="combat-portal-badge">🌀 Portal: {portalName}</div>
-        <div className="combat-points-badge">🏆 {points} / 100 pts</div>
+    <div className="scene">
+      <SceneBg src={BACKGROUNDS.arena[portal.id]} fallback={BACKGROUNDS.arena.code} dim={0.2} />
+      <div className="hud">
+        <button className="pixel-btn ghost small" onClick={() => navigate('/multiverso')}>◀ Salir</button>
+        <span className="hud-chip" style={{ borderColor: portal.color }}>{portal.emoji} {portal.name}</span>
+        <div style={{ minWidth: 220, flex: '0 1 320px' }}>
+          <div className="hud-chip" style={{ marginBottom: 6 }}>
+            🏆 {p.points}{next ? ` / ${next.pointsNeeded}` : ''} · 🔥 {p.currentStreak}
+          </div>
+          <div className="pixel-bar"><div className="pixel-bar-fill" style={{ width: `${pct}%` }} /></div>
+        </div>
+        {import.meta.env.DEV && (
+          <button
+            className="pixel-btn ghost small"
+            title="Solo en desarrollo (DEV_TOOLS=true en server/.env)"
+            onClick={() => api.devPoints(50).then(refresh).catch(err => setError(err.status === 404 ? 'Activa DEV_TOOLS=true en server/.env' : err.message))}
+          >
+            +50 demo
+          </button>
+        )}
       </div>
+      {error && phase !== 'error' && <p className="form-error" style={{ margin: '0 16px' }} onClick={() => setError('')}>{error}</p>}
 
-      <div className="container combat-arena-container">
-        {/* Waiting screen */}
-        {roundStep === 0 && (
-          <div className="combat-waiting slide-up">
-            <div className="safety-spinner" style={{ width: '50px', height: '50px', margin: '0 auto 20px', borderWidth: '4px' }}></div>
-            <h2 className="section-title" style={{ fontSize: '1.5rem' }}>Buscando rival...</h2>
-            <p className="section-subtitle">Preparando arena en el universo de {portalName}</p>
+      <div className="scene-content arena">
+        <div className="arena-stage">
+          <div className={`fighter ${hit === 'hero' ? 'anim-shake anim-flash' : ''}`} style={{ '--aura': PORTALS[hero.portal].color }}>
+            {phase === 'result' && <span className="float-number" key={roundNo}>+{result.points}</span>}
+            <img src={hero.sprite} alt={hero.name} className="pixel-img" />
+            <div><span className="fighter-name">TÚ · {hero.name}</span></div>
+            <div className={`status ${picked !== null || phase === 'waiting' ? 'done' : ''}`}>
+              {phase === 'question' ? 'Pensando…' : phase === 'waiting' ? '¡Respondido!' : ''}
+            </div>
+          </div>
+
+          <div className="vs-pixel">VS</div>
+
+          <div className={`fighter rival ${hit === 'rival' ? 'anim-shake anim-flash' : ''}`} style={{ '--aura': rival ? PORTALS[rival.portal].color : '#fff' }}>
+            {rival
+              ? <img src={rival.sprite} alt={rival.name} className="pixel-img" />
+              : <div className="fighter-unknown">?</div>}
+            <div><span className="fighter-name">RIVAL IA · {rival ? rival.name : '???'}</span></div>
+            <div className={`status ${rivalDone ? 'done' : ''}`}>
+              {phase === 'question' || phase === 'waiting' ? (rivalDone ? '¡Respondido!' : 'Pensando…') : ''}
+            </div>
+          </div>
+        </div>
+
+        {phase === 'matching' && (
+          <div className="pixel-panel center anim-pop">
+            <h2 className="pixel-title" style={{ fontSize: '0.9rem' }}>{roundNo === 0 ? 'Buscando rival…' : `Ronda ${roundNo + 1}`}</h2>
+            <p className="dash-muted" style={{ marginTop: 8 }}>El agente elige una pregunta a tu nivel.</p>
           </div>
         )}
 
-        {/* Question screen */}
-        {roundStep >= 1 && (
-          <div className="combat-active-arena">
-            {/* Visual Header */}
-            <div className="combat-visual" style={{ marginTop: 0, marginBottom: '40px' }}>
-              <div className="combat-player player-you" style={{ padding: '20px' }}>
-                <div className="combat-player-avatar" style={{ width: '60px', height: '60px', fontSize: '1.5rem' }}>🦸‍♀️</div>
-                <div className="combat-player-name">Tú</div>
-                <div style={{ fontSize: '0.8rem', color: selectedAnswer !== null ? 'var(--green-logro)' : 'var(--text-muted)' }}>
-                  {selectedAnswer !== null ? '¡Respondido!' : 'Pensando...'}
-                </div>
-              </div>
-              <div className="combat-vs">
-                <div className="vs-text" style={{ fontSize: '1.5rem' }}>VS</div>
-              </div>
-              <div className="combat-player player-rival" style={{ padding: '20px' }}>
-                <div className="combat-player-avatar" style={{ width: '60px', height: '60px', fontSize: '1.5rem' }}>🦹‍♀️</div>
-                <div className="combat-player-name">Rival (Nvl. 4)</div>
-                <div style={{ fontSize: '0.8rem', color: rivalAnswered ? 'var(--pink-neon)' : 'var(--text-muted)' }}>
-                  {rivalAnswered ? '¡Respondido!' : 'Pensando...'}
-                </div>
-              </div>
-            </div>
+        {phase === 'error' && (
+          <div className="pixel-panel center">
+            <p className="form-error">{error}</p>
+            <button className="pixel-btn gold" onClick={nextRound}>Reintentar</button>
+          </div>
+        )}
 
-            {/* Question card */}
-            <div className={`combat-question-card ${roundStep === 2 ? 'fade-out-partial' : 'slide-up'}`}>
-              <div className="combat-question-tag">🔍 Rápida: Elegir</div>
-              <p className="combat-question-text">
-                Estás diseñando una app para personas mayores. ¿Cuál es el primer principio de diseño que aplicarías?
-              </p>
-              
-              <div className="combat-options">
-                {[
-                  'Usar colores neón para llamar su atención',
-                  'Aumentar el contraste y tamaño de tipografía',
-                  'Añadir muchas animaciones complejas',
-                  'Ocultar los botones para que el diseño sea limpio'
-                ].map((opt, i) => (
-                  <button 
-                    key={i}
-                    className={`combat-option-btn ${selectedAnswer === i ? 'selected' : ''} ${roundStep === 2 && i === 1 ? 'correct' : ''} ${roundStep === 2 && selectedAnswer === i && i !== 1 ? 'incorrect' : ''}`}
-                    onClick={() => handleAnswer(i)}
-                    disabled={selectedAnswer !== null}
-                  >
-                    {opt}
-                  </button>
-                ))}
+        {round && phase !== 'matching' && phase !== 'error' && (
+          <div className="pixel-panel question-panel anim-pop" key={round.roundId}>
+            {phase === 'question' && (
+              <div className="pixel-bar timer-bar">
+                <div className="pixel-bar-fill" style={{ width: '100%', animation: `timer-shrink ${round.timeLimitMs}ms linear forwards` }} />
               </div>
+            )}
+            <div className="q-type">
+              <span className="pixel-tag">{ROUND_LABELS[round.question.type]}</span>
+              <span className="pixel-tag" style={{ marginLeft: 8, borderColor: 'var(--gold)', color: 'var(--gold)' }} title="Dificultad elegida según tu desempeño">
+                {DIFFICULTY[round.question.difficulty]}
+              </span>
             </div>
-
-            {/* Result overlay */}
-            {roundStep === 2 && (
-              <div className="combat-result-overlay slide-up">
-                <h3 className="combat-result-title" style={{ color: 'var(--green-logro)' }}>¡Ronda Ganada! +10 pts</h3>
-                <p className="combat-result-desc">
-                  ¡Excelente! La accesibilidad (contraste y tamaño) es vital para este público. 
-                  Tu rival tardó un poco más en responder.
-                </p>
-                <div className="combat-progress" style={{ marginTop: '20px', marginBottom: '30px' }}>
-                  <div className="progress-bar-bg">
-                    <div className="progress-bar-fill" style={{ width: `${points}%` }}></div>
-                  </div>
-                  <div className="progress-label">
-                    <span>{points} puntos</span>
-                    <span>🎯 100 pts (Jefe)</span>
-                  </div>
-                </div>
-                
-                <button className="btn-primary btn-glow" onClick={handleNext} style={{ width: '100%' }}>
-                  <span>{points >= 100 ? '👾 Enfrentar al NoPuedo' : 'Siguiente Ronda →'}</span>
+            <p className="q-text">{round.question.text}</p>
+            <div className="answers">
+              {round.question.options.map((text, i) => (
+                <button key={text} className={`answer-btn ${answerClass(i)}`} onClick={() => send(i)} disabled={phase !== 'question'}>
+                  {text}
                 </button>
+              ))}
+            </div>
+
+            {phase === 'result' && (
+              <div className="result-banner anim-pop">
+                <h3 className="pixel-title" style={{ color: OUTCOME_TEXT[result.outcome].color }}>
+                  {OUTCOME_TEXT[result.outcome].title} +{result.points} pts
+                </h3>
+                <p>
+                  {result.timedOut ? '⏰ Se acabó el tiempo. ' : ''}
+                  {result.rivalCorrect ? `${rival.name} acertó. ` : `${rival.name} falló. `}
+                  {result.explain}
+                </p>
+                {result.newlyUnlocked?.length > 0 && (
+                  <p className="unlock-inline">🎉 ¡Desbloqueaste a {result.newlyUnlocked.map(id => getHeroine(id)?.name).join(', ')}!</p>
+                )}
+                {next?.pointsDone && !next.ready && (
+                  <p className="unlock-inline">🏆 ¡Ya tienes los puntos del nivel {next.targetLevel}! Completa tu misión para subir.</p>
+                )}
+                <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
+                  <button className="pixel-btn gold" onClick={nextRound}>Siguiente ronda ▶</button>
+                  {next?.ready && <button className="pixel-btn" onClick={() => navigate('/boss')}>👾 Enfrentar al NoPuedo</button>}
+                  {next?.pointsDone && !next.ready && <button className="pixel-btn" onClick={() => navigate('/mision')}>🎯 Ir a mi misión</button>}
+                </div>
               </div>
             )}
           </div>

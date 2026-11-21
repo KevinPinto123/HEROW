@@ -1,0 +1,174 @@
+// Prueba una partida EN VIVO real: 2 jugadoras temporales, emparejamiento,
+// canal de HEROW Live (WebSocket propio), 5 rondas y puntos guardados.
+// Requiere el backend en marcha.
+//   npm run test:live
+import { createClient } from '@supabase/supabase-js'
+import dotenv from 'dotenv'
+
+dotenv.config({ quiet: true })
+const API = process.env.E2E_API ?? `http://localhost:${process.env.PORT ?? 3001}`
+const WS_URL = API.replace(/^http/, 'ws') + '/live/ws'
+const admin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SECRET_KEY, { auth: { persistSession: false } })
+const wait = (ms) => new Promise(r => setTimeout(r, ms))
+
+let failures = 0
+const ok = (cond, msg, extra = '') => {
+  if (cond) console.log(`✅ ${msg}${extra ? ` · ${extra}` : ''}`)
+  else { failures++; console.error(`❌ ${msg}${extra ? ` · ${extra}` : ''}`) }
+}
+
+async function makePlayer(tag, heroineId, portalId) {
+  const username = `live_${tag}_${Date.now().toString(36)}`
+  const password = 'prueba-segura-123'
+  const year = new Date().getFullYear() - 16
+  const reg = await fetch(`${API}/api/auth/register`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password, birth: { day: 2, month: 2, year } }),
+  })
+  if (reg.status !== 201) throw new Error(`registro ${tag}: HTTP ${reg.status}`)
+  const client = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_PUBLISHABLE_KEY, { auth: { persistSession: false } })
+  const { data } = await client.auth.signInWithPassword({ email: `${username}@players.herow.app`, password })
+  const player = { tag, username, userId: data.user.id, token: data.session.access_token }
+  player.call = async (method, path, body) => {
+    const res = await fetch(API + path, {
+      method, headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${player.token}` },
+      body: body ? JSON.stringify(body) : undefined,
+    })
+    return { status: res.status, data: await res.json().catch(() => null) }
+  }
+  await player.call('POST', '/api/me/heroine', { heroineId, portalId })
+  return player
+}
+
+/** Conecta una jugadora al WebSocket y la mete a un canal. */
+function connect(token, ch) {
+  const ws = new WebSocket(WS_URL)
+  const conn = { ws, status: 'connecting', events: [], reactions: [], presence: 0, errors: [] }
+  ws.onopen = () => ws.send(JSON.stringify({ t: 'auth', token }))
+  ws.onmessage = (e) => {
+    const msg = JSON.parse(e.data)
+    if (msg.t === 'ready') ws.send(JSON.stringify({ t: 'join', ch }))
+    if (msg.t === 'joined' && msg.ch === ch) {
+      conn.status = 'ready'
+      for (const m of msg.history) if (!conn.events.some(x => x.id === m.id)) conn.events.push(m)
+    }
+    if (msg.t === 'msg' && msg.ch === ch) (msg.m.type === 'reaction' ? conn.reactions : conn.events).push(msg.m)
+    if (msg.t === 'presence' && msg.ch === ch) conn.presence = msg.count
+    if (msg.t === 'error') conn.errors.push(msg.code)
+  }
+  ws.onclose = () => { conn.status = 'closed' }
+  conn.send = (data) => ws.send(JSON.stringify(data))
+  return conn
+}
+
+const players = []
+try {
+  const a = await makePlayer('a', 'hamilton', 'robotics')
+  const b = await makePlayer('b', 'quispe', 'robotics')
+  players.push(a, b)
+  ok(true, 'Dos jugadoras temporales creadas', `${a.username} vs ${b.username}`)
+
+  // Emparejamiento: A espera, B llega 1 s después.
+  const qa = a.call('POST', '/api/live/queue', { portal: 'robotics' })
+  await wait(1000)
+  const lobby = await b.call('GET', '/api/live/lobby')
+  ok(lobby.data?.waiting?.robotics === a.username, 'El lobby muestra que A está esperando en Robótica')
+  const [ra, rb] = await Promise.all([qa, b.call('POST', '/api/live/queue', { portal: 'robotics' })])
+  ok(ra.data?.matched && rb.data?.matched && ra.data.match.id === rb.data.match.id, 'Emparejadas en la misma partida')
+  const match = ra.data.match
+  ok(match.players.length === 2 && match.channelId === `match:${match.id}`, 'La partida trae su canal en vivo')
+
+  // Conexión al canal en vivo.
+  const conns = { a: connect(a.token, match.channelId), b: connect(b.token, match.channelId) }
+  for (let i = 0; i < 40 && (conns.a.status !== 'ready' || conns.b.status !== 'ready'); i++) await wait(250)
+  ok(conns.a.status === 'ready' && conns.b.status === 'ready', 'Ambas conectadas al canal de HEROW Live')
+  await wait(300)
+  ok(conns.a.presence === 2, 'Presencia: se ven las dos en la sala')
+  const events = { a: conns.a.events, b: conns.b.events }
+
+  // Seguridad: token falso rechazado, y una intrusa no entra a la partida.
+  const fake = connect('token-falso', match.channelId)
+  for (let i = 0; i < 40 && !fake.errors.length; i++) await wait(250)
+  ok(fake.status !== 'ready' && fake.errors.includes('unauthorized'), 'Un token falso no puede conectarse')
+
+  // Reacciones: solo de la lista y las firma el servidor con el id real.
+  conns.a.send({ t: 'react', ch: match.channelId, emoji: '🔥' })
+  conns.a.send({ t: 'react', ch: match.channelId, emoji: 'hola' })
+  await wait(500)
+  ok(conns.b.reactions.length === 1 && conns.b.reactions[0].sender.id === a.userId && conns.b.reactions[0].content.emoji === '🔥',
+    'Reacciones: llegan firmadas por el servidor y no se acepta texto libre')
+
+  // 5 rondas: A responde bien y rápido; B responde mal.
+  const seen = new Set()
+  for (let n = 1; n <= 5; n++) {
+    for (let i = 0; i < 60 && !events.a.some(e => e.type === 'round' && e.content.n === n); i++) await wait(250)
+    const round = events.a.find(e => e.type === 'round' && e.content.n === n)
+    ok(Boolean(round), `Ronda ${n}: pregunta recibida en vivo`, round?.content.question.text.slice(0, 50))
+    if (!round) break
+    seen.add(round.content.question.text)
+    ok(!('correctIndex' in round.content) && !('answer' in round.content.question), `Ronda ${n}: la respuesta correcta NO viaja al navegador`)
+    // Truco de prueba: el snapshot tampoco la tiene; A prueba las 4 opciones en su cabeza, pero solo puede responder 1.
+    const snap = await a.call('GET', `/api/live/${match.id}`)
+    ok(snap.data?.round?.n === n && snap.data.round.result === null, `Ronda ${n}: snapshot sin resultado todavía`)
+    const choiceA = 0
+    const ansA = await a.call('POST', `/api/live/${match.id}/answer`, { n, choice: choiceA })
+    const dup = await a.call('POST', `/api/live/${match.id}/answer`, { n, choice: 1 })
+    if (n === 1) ok(ansA.status === 200 && dup.status === 409, 'No se puede responder dos veces la misma ronda')
+    await wait(300)
+    await b.call('POST', `/api/live/${match.id}/answer`, { n, choice: 3 })
+    for (let i = 0; i < 40 && !events.b.some(e => e.type === 'result' && e.content.n === n); i++) await wait(250)
+    const result = events.b.find(e => e.type === 'result' && e.content.n === n)?.content
+    ok(Boolean(result), `Ronda ${n}: ambas reciben el resultado`, result && `A=${result.players[a.userId].outcome} B=${result.players[b.userId].outcome}`)
+    if (n === 2) {
+      // B pierde la conexión y vuelve: recupera todo el historial.
+      conns.b.ws.close()
+      await wait(300)
+      const again = connect(b.token, match.channelId)
+      for (let i = 0; i < 20 && again.status !== 'ready'; i++) await wait(250)
+      ok(again.events.filter(e => e.type === 'result').length === 2, 'Reconexión: B recupera el historial de la partida')
+      conns.b = again
+      events.b = again.events
+    }
+  }
+  ok(seen.size === 5, 'Las 5 preguntas fueron distintas')
+
+  for (let i = 0; i < 40 && !events.a.some(e => e.type === 'end'); i++) await wait(250)
+  const end = events.a.find(e => e.type === 'end')?.content
+  ok(Boolean(end) && end.reason === 'completed', 'La partida termina y se anuncia el final', end && `marcador ${JSON.stringify(Object.values(end.scores))}`)
+
+  // Puntos guardados en la base para las dos.
+  const ma = await a.call('GET', '/api/me')
+  const mb = await b.call('GET', '/api/me')
+  const robA = ma.data.skills.find(s => s.portal === 'robotics')
+  const robB = mb.data.skills.find(s => s.portal === 'robotics')
+  ok(robA.answered === 5 && robB.answered === 5, '5 rondas guardadas para cada una')
+  ok(ma.data.profile.points === end.points[a.userId] && mb.data.profile.points === end.points[b.userId], 'Los puntos coinciden con el marcador', `A=${ma.data.profile.points} B=${mb.data.profile.points}`)
+  const liveRounds = await admin.from('rounds').select('mode').eq('user_id', a.userId)
+  ok(liveRounds.data.every(r => r.mode === 'live'), 'Las rondas quedan marcadas como "en vivo"')
+
+  // Una jugadora ajena (C) no puede entrar al canal de una partida ajena.
+  const c = await makePlayer('c', 'hamilton', 'robotics')
+  players.push(c)
+  const spy = connect(c.token, match.channelId)
+  for (let i = 0; i < 40 && spy.status !== 'ready' && !spy.errors.length; i++) await wait(250)
+  ok(spy.status !== 'ready' && spy.errors.includes('forbidden'), 'Una jugadora ajena no puede entrar a la partida', `respuesta: ${spy.status} ${spy.errors.join(',')}`)
+  spy.ws.close()
+
+  // Abandono: nueva partida y B se va.
+  const q2 = a.call('POST', '/api/live/queue', { portal: 'robotics' })
+  await wait(500)
+  const [r2a] = await Promise.all([q2, b.call('POST', '/api/live/queue', { portal: 'robotics' })])
+  await b.call('POST', `/api/live/${r2a.data.match.id}/leave`)
+  const snap2 = await a.call('GET', `/api/live/${r2a.data.match.id}`)
+  ok(snap2.data.status === 'ended' && snap2.data.end.reason === 'left' && snap2.data.end.winner === a.userId, 'Si la rival abandona, gana la que se queda')
+
+  conns.a.ws.close(); conns.b.ws.close(); fake.ws.close()
+} catch (err) {
+  failures++
+  console.error('❌ Error inesperado:', err)
+} finally {
+  for (const p of players) await admin.auth.admin.deleteUser(p.userId)
+  if (players.length) console.log('🧹 Jugadoras temporales borradas')
+}
+console.log(failures ? `\n${failures} prueba(s) fallaron` : '\nTodo OK')
+process.exit(failures ? 1 : 0)

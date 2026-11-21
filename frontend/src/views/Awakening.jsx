@@ -1,147 +1,151 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import ParticlesBg from '../components/ParticlesBg'
+import { Navigate, useNavigate } from 'react-router-dom'
+import HeroineCard from '../components/HeroineCard'
+import PixelDialog from '../components/PixelDialog'
+import SceneBg from '../components/SceneBg'
+import { BACKGROUNDS, SPRITES } from '../data/assets'
+import { QUESTIONS, portalFromAnswers } from '../data/diagnosis'
+import { PORTALS, heroinesByPortal } from '../data/heroines'
+import { api } from '../lib/api'
+import { usePlayer } from '../lib/usePlayer'
+import { play } from '../lib/sfx'
+
+const KEYS = ['A', 'B', 'C', 'D']
 
 export default function Awakening() {
   const navigate = useNavigate()
-  const [step, setStep] = useState(1) // 1 = question, 2 = analyzing, 3 = reveal
-  const [answer, setAnswer] = useState('')
-  const [isTyping, setIsTyping] = useState(false)
+  const [answers, setAnswers] = useState([])
+  const [phase, setPhase] = useState('intro') // intro | quiz | analyzing | reveal
+  const [portalId, setPortalId] = useState(null)
+  const [picked, setPicked] = useState(null)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+  const { state, setState, logout } = usePlayer()
 
-  const handleSubmit = () => {
-    if (!answer.trim()) return
-    setStep(2) // Move to analyzing
+  const current = QUESTIONS[answers.length]
 
-    // Simulate AI analysis
-    setTimeout(() => {
-      setStep(3) // Reveal avatar
-    }, 3000)
-  }
-
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      handleSubmit()
+  const answer = (portal) => {
+    play('select')
+    const next = [...answers, portal]
+    setAnswers(next)
+    if (next.length === QUESTIONS.length) {
+      setPhase('analyzing')
+      play('portal')
+      setTimeout(() => {
+        setPortalId(portalFromAnswers(next))
+        setPhase('reveal')
+        play('win')
+      }, 2200)
     }
   }
 
+  const choosePortal = (id) => {
+    play('blip')
+    setPortalId(id)
+    setPicked(null)
+  }
+
+  const confirm = async () => {
+    play('confirm')
+    setSaving(true)
+    setError('')
+    try {
+      setState(await api.setHeroine(picked.id, portalId))
+      navigate('/dashboard')
+    } catch (err) {
+      setError(err.message)
+      setSaving(false)
+    }
+  }
+
+  const portal = portalId && PORTALS[portalId]
+
+  // Ya eligió su heroína inicial: las demás se desbloquean jugando.
+  if (state?.profile?.heroineId && !saving) return <Navigate to="/dashboard" replace />
+
   return (
-    <div className="awakening-view">
-      <ParticlesBg count={30} />
-      
-      {/* Back button */}
-      <button className="back-btn" onClick={() => navigate('/onboarding')}>
-        ← Volver
-      </button>
+    <div className="scene">
+      <SceneBg src={BACKGROUNDS.awakening} dim={phase === 'reveal' ? 0.6 : 0.3} />
+      <div className="hud">
+        <button className="pixel-btn ghost small" onClick={async () => { await logout(); navigate('/') }}>◀ Salir</button>
+        {phase !== 'reveal' && (
+          <button className="pixel-btn ghost small" onClick={() => { setPortalId('code'); setPhase('reveal') }}>
+            ▶▶ Saltar diagnóstico
+          </button>
+        )}
+      </div>
 
-      <div className="container awakening-container">
-        {/* Skip Button for Exploration */}
-        <button 
-          onClick={() => navigate('/multiverso')}
-          style={{
-            background: 'transparent',
-            border: '1px solid var(--cyan-future)',
-            color: 'var(--cyan-future)',
-            padding: '8px 16px',
-            borderRadius: '20px',
-            cursor: 'pointer',
-            marginBottom: '40px',
-            fontSize: '0.8rem',
-            alignSelf: 'flex-end',
-            position: 'absolute',
-            top: '-50px',
-            right: '0'
-          }}
-        >
-          ⏭️ Explorar (Saltar Diagnóstico)
-        </button>
-        {step === 1 && (
-          <div className="awakening-card slide-up">
-            <div className="awakening-yessenia-header">
-              <div className="safety-yessenia-orb small">
-                <span className="safety-yessenia-face">🤖</span>
-              </div>
-              <h2 className="awakening-title">El Reto de YessenIA</h2>
-            </div>
-            
-            <div className="awakening-question">
-              <p>
-                "Tu colegio se quedó sin internet y tienen que entregar un trabajo urgente. 
-                ¿Cómo organizas a tu salón?"
-              </p>
-            </div>
+      <div className="scene-content awaken-wrap">
+        {phase === 'intro' && (
+          <>
+            <img src={SPRITES.yessenia} alt="YessenIA" className="pixel-img awaken-orb" />
+            <PixelDialog text={'¡Hola, heroína! Soy YessenIA 🌀\nTe haré 3 preguntas sobre situaciones reales. No hay respuestas incorrectas: solo quiero conocer cómo piensas.'}>
+              <button className="pixel-btn gold" onClick={() => { play('confirm'); setPhase('quiz') }}>▶ Estoy lista</button>
+            </PixelDialog>
+          </>
+        )}
 
-            <div className="awakening-input-area">
-              <textarea
-                className="awakening-textarea"
-                placeholder="Escribe cómo lo resolverías, no hay respuestas incorrectas..."
-                value={answer}
-                onChange={(e) => setAnswer(e.target.value)}
-                onKeyDown={handleKeyDown}
-                rows={4}
-              ></textarea>
-              
-              <button 
-                className="btn-primary btn-glow btn-xl awakening-submit" 
-                onClick={handleSubmit}
-                disabled={!answer.trim()}
-              >
-                <span>Enviar respuesta ✨</span>
+        {phase === 'quiz' && current && (
+          <div key={answers.length} className="anim-pop">
+            <div className="quiz-progress">
+              {QUESTIONS.map((_, i) => <span key={i} className={i <= answers.length ? 'on' : ''} />)}
+            </div>
+            <PixelDialog text={current.text} />
+            <div className="quiz-options">
+              {current.options.map((o, i) => (
+                <button key={o.portal} className="quiz-option" onClick={() => answer(o.portal)} onMouseEnter={() => play('blip')}>
+                  <span className="key">{KEYS[i]}</span>
+                  <span>{o.text}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {phase === 'analyzing' && (
+          <div className="center">
+            <img src={SPRITES.yessenia} alt="" className="pixel-img awaken-orb" style={{ width: 200 }} />
+            <h2 className="pixel-title" style={{ fontSize: '1rem', margin: '16px 0' }}>Abriendo tu portal…</h2>
+            <div className="pixel-bar" style={{ maxWidth: 420, margin: '0 auto', '--bar': 'var(--cyan-future)' }}>
+              <div className="pixel-bar-fill" style={{ width: '100%', transition: 'width 2s steps(16)' }} />
+            </div>
+          </div>
+        )}
+
+        {phase === 'reveal' && portal && (
+          <div className="screen-warp" style={{ '--aura': portal.color }}>
+            <div className="reveal-portal">
+              <span className="pixel-tag" style={{ borderColor: portal.color, color: portal.color }}>Tu portal</span>
+              <h2 className="pixel-title" style={{ marginTop: 14 }}>{portal.emoji} {portal.name}</h2>
+            </div>
+            <PixelDialog text="Estas mujeres reales abrieron este portal antes que tú. Elige a la heroína que quieres ser en tu aventura." />
+            <div className="heroine-pick">
+              {heroinesByPortal(portalId).map(h => (
+                <HeroineCard
+                  key={h.id}
+                  heroine={h}
+                  selected={picked?.id === h.id}
+                  onSelect={(hero) => { play('select'); setPicked(hero) }}
+                />
+              ))}
+            </div>
+            <div className="center">
+              <button className="pixel-btn gold big" disabled={!picked || saving} onClick={confirm}>
+                {saving ? 'Guardando…' : picked ? `▶ Ser ${picked.name}` : 'Elige una heroína'}
               </button>
-            </div>
-          </div>
-        )}
-
-        {step === 2 && (
-          <div className="awakening-card analyzing">
-            <div className="safety-yessenia-orb big pulse-glow">
-              <span className="safety-yessenia-face">🤖</span>
-            </div>
-            <h2 className="awakening-title">Analizando tu respuesta...</h2>
-            <p className="awakening-subtitle">Descubriendo tu talento oculto en el multiverso STEM</p>
-            
-            <div className="analyzing-progress">
-              <div className="analyzing-bar"></div>
-            </div>
-          </div>
-        )}
-
-        {step === 3 && (
-          <div className="awakening-card reveal slide-up">
-            <div className="reveal-header">
-              <div className="reveal-avatar-container glow-purple">
-                <div className="reveal-avatar">🦸‍♀️</div>
-              </div>
-              <h2 className="reveal-title gradient-text">¡La Arquitecta de Soluciones!</h2>
-            </div>
-            
-            <div className="reveal-analysis">
-              <p className="yessenia-says">
-                "Analicé tu respuesta. Tu forma de organizar equipos demuestra que tienes el poder del <strong>Liderazgo Técnico</strong>. Esta es tu Heroína."
+              {error && <p className="form-error" role="alert">{error}</p>}
+              <p style={{ margin: '14px 0 0', color: 'var(--text-secondary)' }}>
+                Empiezas con ella. Las demás heroínas se desbloquean con logros.
               </p>
-            </div>
-            
-            <div className="reveal-stats">
-              <div className="reveal-stat">
-                <span className="stat-value">95%</span>
-                <span className="stat-label">Lógica</span>
-              </div>
-              <div className="reveal-stat">
-                <span className="stat-value">80%</span>
-                <span className="stat-label">Creatividad</span>
-              </div>
-              <div className="reveal-stat">
-                <span className="stat-value">99%</span>
-                <span className="stat-label">Liderazgo</span>
+              <p style={{ margin: '24px 0 8px', color: 'var(--text-muted)' }}>¿Te llama otro portal?</p>
+              <div className="other-portals">
+                {Object.values(PORTALS).filter(p => p.id !== portalId).map(p => (
+                  <button key={p.id} className="pixel-btn ghost small" onClick={() => choosePortal(p.id)}>
+                    {p.emoji} {p.name}
+                  </button>
+                ))}
               </div>
             </div>
-
-            <button 
-              className="btn-primary btn-glow btn-xl" 
-              onClick={() => navigate('/multiverso')}
-            >
-              <span>🌀 Entrar al Multiverso</span>
-            </button>
           </div>
         )}
       </div>
