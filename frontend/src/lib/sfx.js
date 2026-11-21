@@ -59,5 +59,17 @@ export function toggleMute() {
   } catch {
     // ignorar
   }
+  // Avisa a todos los botones de sonido de la app.
+  try { window.dispatchEvent(new Event('herow-mute')) } catch { /* sin ventana */ }
   return muted
+}
+
+/** Nota musical suelta (para juegos como Secuencia). */
+export function playTone(freq, duration = 0.25) {
+  if (muted) return
+  try {
+    tone(freq, 0, duration, { type: 'triangle', volume: 0.12 })
+  } catch {
+    // Audio no disponible.
+  }
 }

@@ -227,3 +227,89 @@ test('chispa y gota: cada heroína llega a su puerta y a todos sus cristales', a
     }
   }
 })
+
+// ───────── Juegos educativos nuevos (lógica del frontend) ─────────
+const FRONT = '../../frontend/src/arcade'
+
+test('código robot: los 8 niveles tienen solución y la simulación es correcta', async () => {
+  const m = await import(`${FRONT}/robot/logic.js`)
+  let prev = 0
+  for (const def of m.LEVELS) {
+    const level = m.parseLevel(def)
+    const best = m.solve(level)
+    assert.ok(best !== null && best >= 1, `${def.name} sin solución`)
+    assert.ok(best >= prev - 1, `${def.name} rompe el orden de dificultad`)
+    prev = best
+  }
+  const l1 = m.parseLevel(m.LEVELS[0])
+  let p = []
+  for (let i = 0; i < 3; i++) p = m.addCommand(p, 'F')
+  assert.deepEqual(p, [{ cmd: 'F', n: 3 }], 'bloques iguales seguidos se agrupan')
+  assert.equal(m.run(l1, p).result, 'goal')
+  assert.equal(m.run(l1, [{ cmd: 'L', n: 1 }, { cmd: 'F', n: 9 }]).result, 'crash', 'chocar con el borde')
+  assert.equal(m.run(l1, [{ cmd: 'F', n: 1 }]).result, 'short')
+  assert.equal(m.starsFor(1, 1), 3)
+  assert.equal(m.starsFor(3, 1), 2)
+  assert.equal(m.starsFor(9, 1), 1)
+})
+
+test('circuito: siempre tiene solución y mezclado nunca empieza resuelto', async () => {
+  const m = await import(`${FRONT}/circuito/logic.js`)
+  for (let i = 0; i < 500; i++) {
+    const size = 3 + (i % 4)
+    const solved = m.generate(size)
+    assert.ok(m.isSolved(solved))
+    const mixed = m.scramble(solved)
+    assert.ok(!m.isSolved(mixed))
+    mixed.grid.forEach((row, r) => row.forEach((x, c) => {
+      let y = x
+      let ok = false
+      for (let k = 0; k < 4; k++) { if (y === solved.grid[r][c]) ok = true; y = m.rotate(y) }
+      assert.ok(ok, 'cada pieza puede volver a su posición girándola')
+    }))
+  }
+})
+
+test('mente rápida: respuestas correctas y 4 opciones distintas', async () => {
+  const m = await import(`${FRONT}/mates/logic.js`)
+  for (let lv = 0; lv <= 5; lv++) {
+    for (let i = 0; i < 2000; i++) {
+      const q = m.makeQuestion(lv)
+      const t = q.text
+      let value
+      let mm
+      if ((mm = t.match(/^\? \+ (\d+) = (\d+)$/))) value = Number(mm[2]) - Number(mm[1])
+      else if ((mm = t.match(/^(\d+) \+ (\d+)$/))) value = Number(mm[1]) + Number(mm[2])
+      else if ((mm = t.match(/^(\d+) − (\d+)$/))) value = Number(mm[1]) - Number(mm[2])
+      else if ((mm = t.match(/^(\d+) × (\d+)$/))) value = Number(mm[1]) * Number(mm[2])
+      else if ((mm = t.match(/^(\d+) ÷ (\d+)$/))) value = Number(mm[1]) / Number(mm[2])
+      assert.equal(value, q.answer, t)
+      assert.ok(Number.isInteger(q.answer) && q.answer >= 0)
+      assert.equal(new Set(q.options).size, 4)
+      assert.ok(q.options.includes(q.answer) && q.options.every(o => o >= 0))
+    }
+  }
+})
+
+test('órbita: crece al comer, no va en reversa y choca', async () => {
+  const m = await import(`${FRONT}/orbita/logic.js`)
+  let s = m.init()
+  assert.equal(m.turn(s, 'left').queue.length, 0)
+  s = { ...s, food: { x: s.body[0].x + 1, y: s.body[0].y } }
+  s = m.step(s)
+  assert.equal(s.eaten, 1)
+  assert.equal(s.body.length, 4)
+  assert.ok(!s.body.some(b => b.x === s.food.x && b.y === s.food.y))
+  let w = m.init()
+  for (let i = 0; i < 20 && !w.over; i++) w = m.step({ ...w, food: null })
+  assert.ok(w.over)
+})
+
+test('ciencia flash: datos completos y sin repetir', async () => {
+  const { FACTS } = await import(`${FRONT}/flash/facts.js`)
+  assert.ok(FACTS.length >= 40)
+  assert.equal(new Set(FACTS.map(f => f.text)).size, FACTS.length)
+  for (const f of FACTS) assert.ok(f.text && typeof f.answer === 'boolean' && f.why, f.text)
+  const trues = FACTS.filter(f => f.answer).length
+  assert.ok(trues > FACTS.length * 0.35 && trues < FACTS.length * 0.65, 'mezcla equilibrada de verdaderos y falsos')
+})

@@ -20,6 +20,15 @@ export function ReactionBubble({ bubble }) {
   return <span className="reaction-bubble" key={bubble.key}><PixelArt name={REACTION_SPRITES[bubble.emoji]} size={30} /></span>
 }
 
+/** Estrellas pixel (llenas y vacías). */
+export function Stars({ value, max = 3, size = 14 }) {
+  return (
+    <span className="arc-stars" aria-label={`${value} de ${max} estrellas`}>
+      {Array.from({ length: max }, (_, i) => <PixelArt key={i} name={i < value ? 'star' : 'starEmpty'} size={size} />)}
+    </span>
+  )
+}
+
 export function LiveStatus({ status }) {
   const ok = status === 'ready'
   return (
@@ -29,11 +38,12 @@ export function LiveStatus({ status }) {
   )
 }
 
-export function ResultBanner({ title, text, onAgain, againLabel = 'Otra partida', extra, icon = 'trophy' }) {
+export function ResultBanner({ title, text, onAgain, againLabel = 'Otra partida', extra, icon = 'trophy', children }) {
   return (
     <div className="pixel-panel arc-banner anim-pop">
       <PixelArt name={icon} size={40} />
       <p className="arc-label">{title}</p>
+      {children}
       {text && <p className="arc-muted">{text}</p>}
       <div className="arc-row">
         {onAgain && <button className="pixel-btn gold small" onClick={onAgain}>▶ {againLabel}</button>}

@@ -7,7 +7,7 @@
 .arc-title { margin: 0; font-size: clamp(1rem, 4vw, 1.6rem); color: #fff; display: inline-flex; align-items: center; gap: 12px; }
 .arc-title.small { font-size: clamp(0.7rem, 2.6vw, 1rem); }
 .arc-hud-spacer { width: 1px; }
-.arcade .center { text-align: center; }
+.arcade .center, .arc-play .center { text-align: center; }
 .pixel-art { display: inline-block; vertical-align: middle; image-rendering: pixelated; flex-shrink: 0; }
 
 /* ───────── Cuadrícula de juegos ───────── */
@@ -55,7 +55,7 @@
 
 /* ───────── Página de un juego ───────── */
 .arc-tabs { display: flex; gap: 8px; }
-.arc-tabs .pixel-btn, .arcade .pixel-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.arc-tabs .pixel-btn, .arcade .pixel-btn, .arc-play .pixel-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
 .arc-stage { max-width: 900px; margin: 0 auto; padding: 0 16px; display: grid; gap: 18px; justify-items: center; }
 .arc-panel { width: 100%; max-width: 640px; display: grid; gap: 14px; justify-items: center; }
 .arc-panel.center { text-align: center; }
@@ -112,7 +112,7 @@
   cursor: pointer;
 }
 .arc-react:active { transform: translateY(3px); box-shadow: 0 0 0 3px var(--ink); }
-.arcade .reaction-bubble {
+.arcade .reaction-bubble, .arc-play .reaction-bubble {
   position: absolute;
   top: -40px;
   left: 50%;
@@ -255,4 +255,186 @@
 @media (prefers-reduced-motion: reduce) {
   .arc-tile, .cr-cell, .cr-gem, .mem-card { transition: none; }
   .arc-tile:hover .arc-thumb .pixel-art, .arc-spinner, .cr-gem.drop, .c4-slot.last::after, .arc-danger { animation: none; }
+}
+
+/* ───────── Secciones del arcade ───────── */
+.arc-sections { max-width: 1100px; margin: 0 auto; padding: 0 16px; display: grid; gap: 34px; }
+.arc-section { display: grid; gap: 16px; }
+.arc-section-title {
+  margin: 0;
+  justify-self: center;
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: #fff;
+  padding: 10px 16px;
+  background: var(--ink);
+  border: 3px solid var(--cat);
+  box-shadow: 0 0 0 3px var(--ink), 0 0 18px color-mix(in srgb, var(--cat) 45%, transparent);
+  text-shadow: 2px 2px 0 var(--ink);
+}
+.arc-sections .arc-grid { padding: 0; margin: 0; grid-template-columns: repeat(auto-fit, minmax(0, 188px)); gap: 20px; }
+.arc-stars { display: inline-flex; gap: 2px; }
+
+/* ───────── Código Robot ───────── */
+.rb-wrap { display: grid; gap: 14px; justify-items: center; width: 100%; }
+.rb-levels { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+.rb-level { font-family: var(--font-display); font-size: 0.6rem; min-width: 44px; padding: 8px 6px 6px; display: grid; gap: 4px; justify-items: center; color: #fff; background: var(--panel); border: 3px solid #fff; box-shadow: 0 0 0 3px var(--ink); cursor: pointer; }
+.rb-level.on { border-color: var(--gold-heroina); color: var(--gold-heroina); }
+.rb-level:disabled { opacity: 0.35; cursor: not-allowed; }
+.rb-main { display: flex; gap: 22px; flex-wrap: wrap; justify-content: center; align-items: flex-start; width: 100%; }
+.rb-grid { display: grid; grid-template-columns: repeat(var(--cols), 1fr); gap: 4px; width: min(88vw, 360px); padding: 8px; background: var(--panel); border: var(--px) solid #fff; box-shadow: 0 0 0 var(--px) var(--ink), 8px 8px 0 var(--px) rgba(0, 0, 0, 0.45); }
+.rb-cell { aspect-ratio: 1; display: grid; place-items: center; background: rgba(139, 92, 246, 0.14); }
+.rb-cell.wall { background: repeating-linear-gradient(45deg, #5B21B6 0 6px, #4C1D95 6px 12px); box-shadow: inset 0 0 0 2px #7C3AED; }
+.rb-cell.crash { background: rgba(251, 113, 133, 0.55); animation: arc-blink 0.3s steps(2) 3; }
+.rb-rover { display: grid; transition: transform 0.2s steps(3); }
+.rb-side { display: grid; gap: 12px; width: min(88vw, 380px); }
+.rb-program { list-style: none; margin: 0; padding: 10px; min-height: 64px; display: flex; flex-wrap: wrap; gap: 6px; align-content: flex-start; background: var(--ink); border: 3px dashed rgba(139, 92, 246, 0.7); }
+.rb-empty { color: var(--text-muted); font-size: 0.95rem; }
+.rb-block { display: inline-flex; align-items: center; gap: 4px; padding: 6px; background: var(--panel-light); border: 2px solid #fff; font-family: var(--font-display); font-size: 0.55rem; }
+.rb-block.on { border-color: var(--gold-heroina); box-shadow: 0 0 10px var(--gold-heroina); }
+.rb-cmds { display: grid; gap: 8px; }
+
+/* ───────── Circuito ───────── */
+.ct-wrap { display: grid; gap: 14px; justify-items: center; width: 100%; }
+.ct-board { display: grid; grid-template-columns: repeat(var(--n), 1fr); width: min(90vw, 420px); padding: 8px; background: var(--ink); border: var(--px) solid #fff; box-shadow: 0 0 0 var(--px) var(--ink), 8px 8px 0 var(--px) rgba(0, 0, 0, 0.45); }
+.ct-board.solved { box-shadow: 0 0 0 var(--px) var(--ink), 0 0 30px var(--gold-heroina), 8px 8px 0 var(--px) rgba(0, 0, 0, 0.45); }
+.ct-tile { aspect-ratio: 1; padding: 0; border: 1px solid rgba(139, 92, 246, 0.18); background: rgba(35, 23, 96, 0.5); cursor: pointer; }
+.ct-tile svg { width: 100%; height: 100%; display: block; }
+.ct-tile:not(:disabled):hover { background: rgba(139, 92, 246, 0.3); }
+.ct-tile:disabled { cursor: default; }
+
+/* ───────── Binario ───────── */
+.bn-wrap, .qz-wrap, .sq-wrap, .or-wrap { display: grid; gap: 14px; justify-items: center; width: 100%; }
+.bn-panel, .qz-panel { width: 100%; max-width: 560px; display: grid; gap: 14px; justify-items: center; text-align: center; }
+.bn-target { margin: 0; font-size: clamp(2rem, 9vw, 3.2rem); color: var(--gold-heroina); }
+.bn-target.ok { color: var(--green-logro); animation: arc-pop-in 0.2s steps(3); }
+.bn-bits { display: grid; grid-template-columns: repeat(var(--bits), minmax(0, 1fr)); gap: 6px; width: 100%; }
+.bn-bit { display: grid; gap: 6px; justify-items: center; padding: 8px 2px; color: #fff; background: var(--ink); border: 3px solid #5B4F86; cursor: pointer; font-family: var(--font-display); }
+.bn-bit.on { border-color: var(--cyan-future); background: color-mix(in srgb, var(--cyan-future) 25%, var(--ink)); box-shadow: 0 0 14px color-mix(in srgb, var(--cyan-future) 60%, transparent); }
+.bn-weight { font-size: 0.5rem; color: var(--text-secondary); }
+.bn-lamp { font-size: clamp(0.9rem, 4vw, 1.3rem); }
+.bn-bit.on .bn-lamp { color: var(--cyan-future); }
+
+/* ───────── Ciencia Flash y Mente Rápida ───────── */
+.qz-question { margin: 0; font-size: clamp(1.4rem, 7vw, 2.4rem); color: #fff; }
+.qz-fact { margin: 0; font-size: clamp(1.15rem, 4vw, 1.5rem); line-height: 1.4; min-height: 3.2em; display: grid; place-items: center; }
+.qz-panel.ok { box-shadow: 0 0 0 var(--px) var(--ink), inset 0 0 0 var(--px) var(--green-logro), 8px 8px 0 var(--px) rgba(0, 0, 0, 0.45); }
+.qz-panel.bad { box-shadow: 0 0 0 var(--px) var(--ink), inset 0 0 0 var(--px) #FB7185, 8px 8px 0 var(--px) rgba(0, 0, 0, 0.45); }
+.qz-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+.qz-option { font-size: 1rem; }
+.qz-tf { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
+
+/* ───────── Órbita ───────── */
+.or-canvas { width: min(92vw, 432px); height: auto; image-rendering: pixelated; touch-action: none; border: var(--px) solid #fff; box-shadow: 0 0 0 var(--px) var(--ink), 8px 8px 0 var(--px) rgba(0, 0, 0, 0.45); }
+.or-pad { display: none; grid-template-columns: repeat(3, 56px); gap: 6px; }
+@media (hover: none), (pointer: coarse) { .or-pad { display: grid; } }
+.or-pad-btn { width: 56px; height: 56px; padding: 0; touch-action: none; }
+.or-arrow { display: grid; }
+.or-arrow.right { transform: rotate(90deg); }
+.or-arrow.down { transform: rotate(180deg); }
+.or-arrow.left { transform: rotate(270deg); }
+
+/* ───────── Secuencia ───────── */
+.sq-board { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: min(84vw, 340px); aspect-ratio: 1; padding: 12px; background: var(--panel); border: var(--px) solid #fff; box-shadow: 0 0 0 var(--px) var(--ink), 8px 8px 0 var(--px) rgba(0, 0, 0, 0.45); }
+.sq-pad { border: 3px solid var(--ink); background: color-mix(in srgb, var(--pad) 35%, var(--ink)); box-shadow: inset -6px -6px 0 rgba(0, 0, 0, 0.3), inset 6px 6px 0 rgba(255, 255, 255, 0.12); cursor: pointer; touch-action: manipulation; }
+.sq-pad.lit { background: var(--pad); box-shadow: 0 0 26px var(--pad), inset 6px 6px 0 rgba(255, 255, 255, 0.35); }
+.sq-pad:disabled { cursor: default; }
+.sq-core { position: absolute; left: 50%; top: 50%; width: 22%; transform: translate(-50%, -50%); pointer-events: none; filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.6)); }
+
+@media (max-width: 560px) {
+  .arc-sections .arc-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .arc-section-title { font-size: 0.6rem; }
+}
+
+/* ───────── Juego a pantalla completa ───────── */
+body.arc-playing { overflow: hidden; }
+body.arc-playing .yessenia-float-btn,
+body.arc-playing .yessenia-chat,
+body.arc-playing .mute-btn { display: none !important; }
+
+.arc-play {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  background: var(--ink);
+  animation: arc-warp 0.45s steps(6);
+}
+@keyframes arc-warp {
+  0% { clip-path: circle(0% at 50% 50%); filter: brightness(2.2); }
+  60% { filter: brightness(1.4); }
+  100% { clip-path: circle(75% at 50% 50%); filter: none; }
+}
+.arc-play .scene-bg { position: absolute; }
+.arc-play-bar {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 16px;
+  background: rgba(15, 10, 46, 0.85);
+  border-bottom: 3px solid var(--tile);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--tile) 40%, transparent);
+}
+.arc-play-bar .pixel-btn { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.arc-play-title { margin: 0; display: inline-flex; align-items: center; gap: 10px; font-family: var(--font-display); font-size: clamp(0.55rem, 2vw, 0.85rem); color: #fff; text-shadow: 2px 2px 0 var(--ink); min-width: 0; }
+.arc-play-title span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.arc-play-tools { display: flex; gap: 8px; }
+
+.arc-play-body {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  container-type: size;
+  padding: 12px 16px;
+}
+.arc-play-inner { min-height: 100%; display: grid; place-items: center; }
+.arc-play-inner > * { width: 100%; }
+.arc-play-help, .arc-play-confirm {
+  position: absolute;
+  z-index: 10;
+  top: 76px;
+  left: 0;
+  right: 0;
+  margin: 0 auto; /* centrado sin transform: la animación de entrada usa transform */
+  width: min(92vw, 520px);
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+}
+
+/* Cada juego crece hasta llenar el espacio (100cqw / 100cqh = ancho / alto disponibles). */
+.arc-play .cg-canvas { max-width: none; width: min(100cqw, calc((100cqh - 120px) * 12 / 7)); }
+@media (hover: none), (pointer: coarse) { .arc-play .cg-canvas { width: min(100cqw, calc((100cqh - 190px) * 12 / 7)); } }
+.arc-play .cr-board { width: min(96cqw, calc(100cqh - 90px), 720px); }
+.arc-play .michi-board { width: min(92cqw, calc(100cqh - 170px), 560px); }
+.arc-play .c4-board { width: min(96cqw, calc((100cqh - 170px) * 7 / 6), 680px); }
+.arc-play .tb-board { width: min(92cqw, calc(100cqh - 170px), 600px); }
+.arc-play .mem-grid { width: min(96cqw, calc((100cqh - 180px) * 0.74), 620px); }
+.arc-play .rb-grid { width: min(90cqw, calc(100cqh - 150px), 520px); }
+.arc-play .ct-board { width: min(94cqw, calc(100cqh - 120px), 640px); }
+.arc-play .or-canvas { width: min(94cqw, calc(100cqh - 80px), 680px); }
+@media (hover: none), (pointer: coarse) { .arc-play .or-canvas { width: min(94cqw, calc(100cqh - 280px), 680px); } }
+.arc-play .sq-board { width: min(90cqw, calc(100cqh - 120px), 540px); }
+.arc-play .bn-panel, .arc-play .qz-panel { max-width: 760px; }
+.arc-play .tg-players .tg-player { width: 60px; height: 60px; }
+/* Online: además del tablero hay jugadoras y reacciones. */
+.arc-play .tg-wrap:has(.arc-reactions) .michi-board,
+.arc-play .tg-wrap:has(.arc-reactions) .tb-board { width: min(92cqw, calc(100cqh - 300px), 520px); }
+.arc-play .tg-wrap:has(.arc-reactions) .c4-board { width: min(96cqw, calc((100cqh - 300px) * 7 / 6), 620px); }
+
+@media (max-width: 560px) {
+  .arc-play-bar { padding: 8px 10px; }
+  .arc-play-title span { display: none; }
+  .arc-play-body { padding: 8px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .arc-play { animation: none; }
 }

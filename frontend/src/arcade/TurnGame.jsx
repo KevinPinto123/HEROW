@@ -104,7 +104,7 @@ const END_TEXT = {
 }
 
 /** Online: el servidor arbitra. Aquí solo se muestra y se envían jugadas. */
-export function OnlineTurnGame({ room, onAgain, onExit }) {
+export function OnlineTurnGame({ room, onAgain, onExit, onEnd }) {
   const rules = TURN_GAMES[room.game]
   const Board = BOARDS[room.game]
   const me = room.you
@@ -115,7 +115,10 @@ export function OnlineTurnGame({ room, onAgain, onExit }) {
       const ms = m.content.state.turnRemainingMs
       setDeadline(ms != null ? Date.now() + ms : null)
     }
-    if (m.type === 'end') play(m.content.winner === me ? 'win' : m.content.winner === null ? 'confirm' : 'lose')
+    if (m.type === 'end') {
+      play(m.content.winner === me ? 'win' : m.content.winner === null ? 'confirm' : 'lose')
+      onEnd?.()
+    }
   })
   // Jugada optimista: se ve al instante y desaparece cuando llega cualquier evento del servidor.
   const [pending, setPending] = useState(null) // { state, base }

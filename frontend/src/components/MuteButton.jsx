@@ -1,8 +1,13 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { isMuted, play, toggleMute } from '../lib/sfx'
 
 export default function MuteButton() {
   const [muted, setMuted] = useState(isMuted)
+  useEffect(() => {
+    const sync = () => setMuted(isMuted())
+    window.addEventListener('herow-mute', sync)
+    return () => window.removeEventListener('herow-mute', sync)
+  }, [])
   return (
     <button
       className="pixel-btn ghost small mute-btn"

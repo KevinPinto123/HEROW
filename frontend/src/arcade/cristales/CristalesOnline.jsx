@@ -11,10 +11,13 @@ import { CristalesBoard } from './Cristales'
 const SEND_EVERY_MS = 1000
 
 /** Duelo online: las dos juegan el mismo tablero inicial durante 90 s. Gana el puntaje más alto. */
-export default function CristalesOnline({ room, onAgain, onExit }) {
+export default function CristalesOnline({ room, onAgain, onExit, onEnd }) {
   const me = room.you
   const { end, scores, status, bubbles, react } = useArcadeRoom(room, (m) => {
-    if (m.type === 'end') play(m.content.winner === me ? 'win' : m.content.winner === null ? 'confirm' : 'lose')
+    if (m.type === 'end') {
+      play(m.content.winner === me ? 'win' : m.content.winner === null ? 'confirm' : 'lose')
+      onEnd?.()
+    }
   })
   // Reloj del servidor → reloj local (evita desfases entre equipos).
   const [offset] = useState(() => (room.state.now ?? Date.now()) - Date.now())
