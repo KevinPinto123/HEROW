@@ -9,6 +9,8 @@ import { usePlayer } from './lib/usePlayer'
 import Landing from './views/Landing'
 
 // Cada pantalla se descarga solo cuando se visita.
+const Arcade = lazy(() => import('./views/Arcade'))
+const ArcadeGame = lazy(() => import('./views/ArcadeGame'))
 const Awakening = lazy(() => import('./views/Awakening'))
 const Boss = lazy(() => import('./views/Boss'))
 const Combat = lazy(() => import('./views/Combat'))
@@ -74,6 +76,9 @@ export default function App() {
           <Suspense fallback={<Loading />}>
           <Routes>
             <Route path="/" element={<Landing />} />
+            {/* Arcade: público. El modo online pide cuenta dentro de cada juego. */}
+            <Route path="/arcade" element={<Arcade />} />
+            <Route path="/arcade/:gameId" element={<ArcadeGame />} />
             <Route path="/registro" element={<GuestOnly><Register /></GuestOnly>} />
             <Route path="/entrar" element={<GuestOnly><Login /></GuestOnly>} />
             <Route path="/despertar" element={<Protected needsHeroine={false}><Awakening /></Protected>} />

@@ -76,6 +76,7 @@ export default function Landing() {
             <li><a href="#heroinas">Heroínas</a></li>
             <li><a href="#nosotros">Nosotros</a></li>
             <li><a href="#sumate">Súmate</a></li>
+            <li><a href="/arcade" onClick={(e) => { e.preventDefault(); play('select'); navigate('/arcade') }}>🕹️ Arcade</a></li>
           </ul>
           <div style={{ display: 'flex', gap: 8 }}>
             {!session && <button className="nav-cta" style={{ background: 'transparent', border: '2px solid #fff' }} onClick={() => navigate('/entrar')}>Entrar</button>}
@@ -96,6 +97,7 @@ export default function Landing() {
           </p>
           <div className="title-actions">
             <button className="pixel-btn gold big" onClick={start}>▶ Empezar aventura</button>
+            <button className="pixel-btn cyan big" onClick={() => { play('select'); navigate('/arcade') }}>🕹️ Arcade sin registrarte</button>
             <a className="pixel-btn ghost big" href="#heroinas" onClick={() => play('blip')}>Ver heroínas</a>
           </div>
           <p className="press-start">PARA CHICAS DE 15 A 17 AÑOS · 100% SEGURO</p>

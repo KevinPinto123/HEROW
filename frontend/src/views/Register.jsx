@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import PixelDialog from '../components/PixelDialog'
 import SceneBg from '../components/SceneBg'
 import { BACKGROUNDS } from '../data/assets'
@@ -10,6 +10,9 @@ const MONTHS = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 
 
 export default function Register() {
   const navigate = useNavigate()
+  const location = useLocation()
+  // Si viene del arcade, vuelve al juego para jugar online; si no, empieza la aventura.
+  const from = location.state?.from
   const { register, configured } = usePlayer()
   const [form, setForm] = useState({ username: '', password: '', password2: '', day: '', month: '', year: '', guardian: '' })
   const [error, setError] = useState('')
@@ -38,7 +41,7 @@ export default function Register() {
         guardianContact: form.guardian.trim(),
       })
       play('win')
-      navigate('/despertar')
+      navigate(typeof from === 'string' && from.startsWith('/arcade') ? from : '/despertar')
     } catch (err) {
       play('lose')
       setError(err.message)
@@ -51,7 +54,7 @@ export default function Register() {
       <SceneBg src={BACKGROUNDS.awakening} dim={0.55} />
       <div className="hud">
         <Link className="pixel-btn ghost small" to="/">◀ Volver</Link>
-        <Link className="pixel-btn ghost small" to="/entrar">Ya tengo cuenta</Link>
+        <Link className="pixel-btn ghost small" to="/entrar" state={location.state}>Ya tengo cuenta</Link>
       </div>
       <div className="scene-content auth-wrap">
         <PixelDialog text={'¡Hola, futura heroína! 🌀\nCrea tu cuenta. No necesitas correo: solo un nombre de usuaria y una contraseña que recuerdes.'} />

@@ -31,6 +31,7 @@ export default function GameNav() {
         <NavLink to="/multiverso" className={link} onClick={() => play('blip')}>⚔️ Jugar</NavLink>
         <NavLink to="/mision" className={link} onClick={() => play('blip')}>🎯 Misión</NavLink>
         <NavLink to="/niveles" className={link} onClick={() => play('blip')}>🗺️ Mapa</NavLink>
+        <NavLink to="/arcade" className={link} onClick={() => play('blip')}>🕹️ Arcade</NavLink>
         <button className="pixel-btn ghost small" onClick={async () => { await logout(); navigate('/') }}>Salir</button>
       </div>
     </nav>

@@ -665,6 +665,8 @@ Con `DEV_TOOLS=true` en `server/.env`, la pantalla **Entrar** muestra botones pa
 | `npm run check:ai` | Verifica que Gemini/OpenAI respondan bien |
 | `npm run test:e2e --prefix server` | Prueba de punta a punta (registro, combate, misión, nivel, oportunidades, seguridad) |
 | `npm run test:live --prefix server` | Partida en vivo real entre 2 jugadoras (WebSocket de HEROW Live) |
+| `npm run test:arcade --prefix server` | Reglas del arcade, salas online y que cada nivel de Chispa y Gota se pueda terminar |
+| `npm run test:arcade:e2e --prefix server` | Arcade online de punta a punta contra un backend real (sala con código, michi, reporte, duelo) |
 
 ### 🌀 Waitlist (colegios, aliados, inversores)
 
@@ -774,6 +776,18 @@ registra la fecha en `leads.consent_at`, que también sale en el CSV de exportac
 - **Niveles:** 500 / 1000 / 1500 puntos + una misión real (perfil profesional → primer post → mini proyecto) que revisa la IA + un paso en el mundo real (LinkedIn o portafolio, postular a una oportunidad) + vencer al NoPuedo.
 - **Agente:** ajusta la dificultad según tu precisión, genera preguntas nuevas con IA, busca becas y cursos reales cada 12 h (verifica enlaces, resume, detecta convocatorias cerradas) y los ordena según tu desempeño.
 - **En vivo:** emparejamiento 1 vs 1 por portal con HEROW Live; el servidor decide preguntas, tiempos y puntos. Solo hay reacciones, no chat.
+
+#### 🕹️ Arcade HEROW (`/arcade`)
+
+Juegos originales, gratis y sin registro en **modo consola** (contra la compu o 2 jugadoras en el mismo equipo):
+**Chispa y Gota** (aventura cooperativa fuego + agua), **Cristales STEM** (combina 3), **Timbiriche**, **Michi**, **Conecta 4** y **Memoria de Heroínas**.
+
+El **modo online** (Cristales, Timbiriche, Michi y Conecta 4) pide cuenta HEROW (15 a 17 años): rival al azar o sala privada con código de 5 letras.
+El servidor arbitra cada jugada (`server/src/arcade/`), hay 30 s por turno, solo reacciones (sin chat) y un botón **Reportar** que termina la partida y bloquea a la pareja.
+Las reglas viven en un archivo compartido idéntico en `server/src/arcade/rules.js` y `frontend/src/arcade/rules.js` (una prueba verifica que sean iguales).
+El arcade no suma puntos de nivel: es para divertirse.
+
+> No se verifica identidad con DNI: no prueba quién juega, expone datos de menores y las APIs no oficiales de RENIEC no son una vía legal. La seguridad se basa en no tener chat, datos mínimos, salas privadas, reportes y bloqueo.
 
 #### 🔴 En vivo (HEROW Live)
 

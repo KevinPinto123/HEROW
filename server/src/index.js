@@ -3,6 +3,7 @@ import express from 'express'
 import { rateLimit } from 'express-rate-limit'
 import { config, features } from './config.js'
 import { optionalUser, requireUser } from './middleware/auth.js'
+import { arcadeRouter } from './routes/arcade.js'
 import { authRouter } from './routes/auth.js'
 import { combatRouter } from './routes/combat.js'
 import { meRouter } from './routes/me.js'
@@ -39,6 +40,7 @@ app.use('/api/combat', limit(60), requireUser, combatRouter)
 app.use('/api/missions', limit(10), requireUser, missionsRouter)
 app.use('/api/opportunities', limit(60), requireUser, opportunitiesRouter)
 app.use('/api/live', limit(120), requireUser, liveRouter)
+app.use('/api/arcade', limit(240), requireUser, arcadeRouter)
 app.use('/api/yessenia', limit(20), optionalUser, yesseniaRouter)
 app.use('/api/recommendations', limit(10), recommendationsRouter)
 app.use('/api/leads', limit(30), leadsRouter)

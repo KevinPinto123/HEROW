@@ -69,6 +69,16 @@ export const api = {
   liveAnswer: (id, n, choice) => post(`/api/live/${id}/answer`, { n, choice }),
   liveLeave: (id) => post(`/api/live/${id}/leave`),
 
+  // Arcade online (el modo consola no usa el servidor)
+  arcadeLobby: () => request('/api/arcade/lobby'),
+  arcadeCode: (game) => post('/api/arcade/code', { game }),
+  arcadeQueue: (game, { code, ticket } = {}) => post('/api/arcade/queue', { game, code, ticket }),
+  arcadeCancel: (ticket) => post('/api/arcade/cancel', { ticket }),
+  arcadeRoom: (id) => request(`/api/arcade/${id}`),
+  arcadeMove: (id, move) => post(`/api/arcade/${id}/move`, { move }),
+  arcadeLeave: (id) => post(`/api/arcade/${id}/leave`),
+  arcadeReport: (id, reason) => post(`/api/arcade/${id}/report`, { reason }),
+
   /** Solo desarrollo (DEV_TOOLS=true en el servidor). */
   devPoints: (amount = 50) => post('/api/dev/points', { amount }),
   devDemoLogin: (account) => post('/api/dev/demo-login', { account }),
