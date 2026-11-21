@@ -1,14 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { getHeroine } from '../data/heroines'
 import { api } from '../lib/api'
-import { REACTIONS } from '../lib/live'
 import { play } from '../lib/sfx'
 import { AI } from './ai'
 import { Conecta4Board, MichiBoard, TimbiricheBoard } from './boards'
 import { PLAYER_COLORS } from './colors'
 import { useArcadeRoom } from './online'
 import { TURN_GAMES } from './rules'
+import PixelArt from './PixelArt'
 import { ReportButton } from './Safety'
+import { LiveStatus, ReactionBar, ReactionBubble, ResultBanner } from './ui'
 
 const BOARDS = { michi: MichiBoard, conecta4: Conecta4Board, timbiriche: TimbiricheBoard }
 
@@ -16,24 +17,11 @@ function Scoreboard({ names, turn, over, scores, timer }) {
   return (
     <div className="arc-hud">
       {names.map((name, i) => (
-        <span key={i} className={`arc-chip player ${turn === i && !over ? 'turn' : ''}`} style={{ '--p': PLAYER_COLORS[i] }}>
-          {turn === i && !over ? '▶ ' : ''}{name}{scores ? ` · ${scores[i]}` : ''}
+        <span key={i} className={`hud-chip arc-player ${turn === i && !over ? 'turn' : ''}`} style={{ '--p': PLAYER_COLORS[i] }}>
+          <span className="arc-swatch" />{name}{scores ? ` ${scores[i]}` : ''}
         </span>
       ))}
       {timer}
-    </div>
-  )
-}
-
-function ResultBanner({ title, text, onAgain, againLabel = '🔄 Otra partida', extra }) {
-  return (
-    <div className="arc-banner">
-      <h3>{title}</h3>
-      {text && <p>{text}</p>}
-      <div className="arc-row">
-        {onAgain && <button className="arc-btn" onClick={onAgain}>{againLabel}</button>}
-        {extra}
-      </div>
     </div>
   )
 }
@@ -48,7 +36,7 @@ export function LocalTurnGame({ gameId, mode, level = 'facil' }) {
   const thinking = useRef(false)
   // En cada partida se alterna quién empieza: la "jugadora 0" de las reglas cambia.
   const swapSides = round % 2 === 1
-  const people = mode === 'cpu' ? ['Tú', `Compu ${level === 'facil' ? '🙂' : '🤖'}`] : ['Jugadora 1', 'Jugadora 2']
+  const people = mode === 'cpu' ? ['Tú', 'Compu'] : ['Jugadora 1', 'Jugadora 2']
   const names = swapSides ? [people[1], people[0]] : people
   const cpuIdx = mode === 'cpu' ? (swapSides ? 0 : 1) : -1
 
@@ -91,18 +79,19 @@ export function LocalTurnGame({ gameId, mode, level = 'facil' }) {
   }
 
   let title = ''
+  let icon = 'trophy'
   if (state.over) {
-    if (state.draw) title = '🤝 ¡Empate!'
-    else if (mode === 'cpu') title = state.winner === cpuIdx ? '💪 Ganó la compu. ¡La revancha!' : '🏆 ¡Ganaste!'
-    else title = `🏆 ¡Ganó ${names[state.winner]}!`
+    if (state.draw) { title = 'Empate'; icon = 'smile' }
+    else if (mode === 'cpu' && state.winner === cpuIdx) { title = 'Ganó la compu'; icon = 'bolt' }
+    else title = mode === 'cpu' ? '¡Ganaste!' : `¡Ganó ${names[state.winner]}!`
   }
 
   return (
     <div className="tg-wrap">
       <Scoreboard names={names} turn={state.turn} over={state.over} scores={state.scores} />
-      <p className="arc-muted">Marcador de la sesión: {people[0]} {wins[0]} – {wins[1]} {people[1]}</p>
+      <p className="arc-muted">{people[0]} {wins[0]} – {wins[1]} {people[1]}</p>
       <Board state={state} canMove={!state.over && state.turn !== cpuIdx} onMove={move} />
-      {state.over && <ResultBanner title={title} onAgain={again} />}
+      {state.over && <ResultBanner title={title} icon={icon} onAgain={again} />}
     </div>
   )
 }
@@ -156,24 +145,24 @@ export function OnlineTurnGame({ room, onAgain, onExit }) {
     })
   }
 
-  const names = room.players.map((p, i) => (i === me ? `Tú · ${p.username}` : p.username))
+  const names = room.players.map((p, i) => (i === me ? 'Tú' : p.username))
   const secs = deadline && !over ? Math.max(0, Math.ceil((deadline - now) / 1000)) : null
   const timer = secs !== null && (
-    <span className={`arc-chip ${secs <= 5 ? 'danger' : ''}`}>⏱ {view.turn === me ? `Tu turno: ${secs} s` : `Rival: ${secs} s`}</span>
+    <span className={`hud-chip ${secs <= 5 ? 'arc-danger' : ''}`}><PixelArt name="clock" size={12} /> {secs}</span>
   )
 
   let banner = null
   if (end) {
     const won = end.winner === me
-    const title = end.winner === null ? '🤝 ¡Empate!' : won ? '🏆 ¡Ganaste!' : '💪 Buen juego'
-    banner = <ResultBanner title={title} text={END_TEXT[end.reason]?.(won)} onAgain={onAgain} againLabel="⚔️ Buscar otra partida"
-      extra={<button className="arc-btn ghost" onClick={onExit}>Salir</button>} />
+    const title = end.winner === null ? 'Empate' : won ? '¡Ganaste!' : 'Buen juego'
+    banner = <ResultBanner title={title} icon={end.winner === null ? 'smile' : won ? 'trophy' : 'bolt'} text={END_TEXT[end.reason]?.(won)} onAgain={onAgain} againLabel="Otra rival"
+      extra={<button className="pixel-btn ghost small" onClick={onExit}>Salir</button>} />
   }
 
   return (
     <div className="tg-wrap">
       <div className="arc-hud">
-        <span className={`arc-chip ${status === 'ready' ? 'ok' : ''}`}>{status === 'ready' ? '🟢 En vivo' : '🟡 Reconectando…'}</span>
+        <LiveStatus status={status} />
         {!end && <ReportButton roomId={room.id} rival={room.players[1 - me].username} />}
       </div>
       <Scoreboard names={names} turn={view.turn} over={over} scores={view.scores} timer={timer} />
@@ -182,19 +171,16 @@ export function OnlineTurnGame({ room, onAgain, onExit }) {
           const h = getHeroine(p.heroineId)
           return (
             <div key={p.userId} className="tg-player" style={{ '--p': PLAYER_COLORS[i] }}>
-              {bubbles[i] && <span className="reaction-bubble" key={bubbles[i].key}>{bubbles[i].emoji}</span>}
-              {h ? <img src={h.sprite} alt="" className="pixel-img" /> : <span className="tg-avatar">{i === 0 ? '★' : '●'}</span>}
+              <ReactionBubble bubble={bubbles[i]} />
+              {h ? <img src={h.sprite} alt="" className="pixel-img" /> : <PixelArt name={i === 0 ? 'markX' : 'markO'} size={28} />}
             </div>
           )
         })}
       </div>
       <Board state={view} canMove={canMove} onMove={move} />
-      {error && <p className="arc-error" onClick={() => setError('')}>{error}</p>}
+      {error && <p className="form-error" onClick={() => setError('')}>{error}</p>}
       {banner}
-      <div className="arc-reactions" aria-label="Reacciones">
-        {REACTIONS.map(e => <button key={e} className="arc-react" onClick={() => react(e)}>{e}</button>)}
-        <span className="arc-muted">Solo reacciones: en HEROW no hay chat.</span>
-      </div>
+      <ReactionBar onReact={react} />
     </div>
   )
 }

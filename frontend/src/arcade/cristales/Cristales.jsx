@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { play } from '../../lib/sfx'
+import PixelArt from '../PixelArt'
+import { ResultBanner } from '../ui'
 import { rng } from '../rules'
 import { GEMS, N, adjacent, collapse, findMatches, hasMoves, makeBoard, pointsFor, swap } from './logic'
 
@@ -107,10 +109,10 @@ export function CristalesBoard({ seed, running, onScore }) {
           >
             <div
               className={`cr-gem ${isSel ? 'sel' : ''} ${popping.has(`${r},${c}`) ? 'pop' : ''} ${t.drop ? 'drop' : ''}`}
-              style={{ '--gem': gem.color, '--drop': t.drop ?? 0 }}
+              style={{ '--drop': t.drop ?? 0 }}
               title={gem.name}
             >
-              <span>{gem.icon}</span>
+              <PixelArt name={gem.sprite} size={40} />
             </div>
           </div>
         )
@@ -167,21 +169,23 @@ export default function CristalesSolo({ durationMs = 90_000 }) {
   return (
     <div className="cr-wrap">
       <div className="arc-hud">
-        <span className="arc-chip">⭐ {score}</span>
-        <span className="arc-chip">⏱ {Math.ceil(left / 1000)} s</span>
-        <span className="arc-chip">🏆 Récord: {best}</span>
+        <span className="hud-chip"><PixelArt name="star" size={12} /> {score}</span>
+        <span className="hud-chip"><PixelArt name="clock" size={12} /> {Math.ceil(left / 1000)}</span>
+        <span className="hud-chip"><PixelArt name="trophy" size={12} /> {best}</span>
       </div>
       <div className="cr-stage">
         <CristalesBoard key={round} seed={seed + round} running={phase === 'playing'} onScore={(v) => { scoreRef.current = v; setScore(v) }} />
-        {phase !== 'playing' && (
+        {phase === 'ready' && (
           <div className="cg-overlay">
-            {phase === 'over' && <p>⏰ ¡Tiempo! Hiciste <strong>{score}</strong> puntos{score > 0 && score === best ? ' · ¡Récord! 🎉' : ''}</p>}
-            {phase === 'ready' && <p>Junta 3 o más cristales iguales. Tienes 90 segundos.</p>}
-            <button className="arc-btn" onClick={start}>{phase === 'over' ? '🔄 Jugar otra vez' : '▶ Empezar'}</button>
+            <button className="pixel-btn gold" onClick={start}>▶ Empezar</button>
+          </div>
+        )}
+        {phase === 'over' && (
+          <div className="cg-overlay">
+            <ResultBanner title={`${score} puntos`} text={score > 0 && score === best ? '¡Nuevo récord!' : '¡Tiempo!'} onAgain={start} againLabel="Otra vez" icon={score > 0 && score === best ? 'trophy' : 'star'} />
           </div>
         )}
       </div>
-      <p className="cg-keys">👆 Desliza un cristal hacia su vecino, o toca uno y luego el de al lado.</p>
     </div>
   )
 }

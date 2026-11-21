@@ -1,8 +1,10 @@
 // Tableros (solo dibujo). Reciben el estado, si la jugadora puede mover y onMove.
 import { PLAYER_COLORS } from './colors'
+import PixelArt from './PixelArt'
 import { C4_COLS, c4DropRow } from './rules'
 
-const MARKS = ['✖', '◯']
+const MARKS = ['markX', 'markO']
+const MARK_NAMES = ['equis', 'círculo']
 
 export function MichiBoard({ state, canMove, onMove }) {
   return (
@@ -13,10 +15,9 @@ export function MichiBoard({ state, canMove, onMove }) {
           className={`michi-cell ${state.line?.includes(i) ? 'win' : ''} ${state.last === i ? 'last' : ''}`}
           disabled={!canMove || v !== null}
           onClick={() => onMove({ cell: i })}
-          aria-label={v === null ? `Casilla ${i + 1} libre` : `Casilla ${i + 1}: ${MARKS[v]}`}
-          style={{ color: v === null ? undefined : PLAYER_COLORS[v] }}
+          aria-label={v === null ? `Casilla ${i + 1} libre` : `Casilla ${i + 1}: ${MARK_NAMES[v]}`}
         >
-          {v === null ? '' : MARKS[v]}
+          {v !== null && <PixelArt name={MARKS[v]} size={56} />}
         </button>
       ))}
     </div>
@@ -85,7 +86,6 @@ export function TimbiricheBoard({ state, canMove, onMove }) {
         const v = state.boxes[(gr - 1) / 2][(gc - 1) / 2]
         cells.push(
           <span key={key} className={`tb-box ${v !== null ? 'on' : ''}`} style={{ '--box': v === null ? 'transparent' : PLAYER_COLORS[v] }}>
-            {v === null ? '' : v === 0 ? '★' : '●'}
           </span>,
         )
       }

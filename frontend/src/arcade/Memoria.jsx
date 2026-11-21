@@ -1,6 +1,10 @@
 import { useRef, useState } from 'react'
 import { HEROINES } from '../data/heroines'
+import { SPRITES } from '../data/assets'
 import { play } from '../lib/sfx'
+import { PLAYER_COLORS } from './colors'
+import PixelArt from './PixelArt'
+import { ResultBanner } from './ui'
 
 const PAIRS = 8
 
@@ -83,13 +87,17 @@ export default function Memoria({ mode = 'solo' }) {
     <div className="mem-wrap">
       <div className="arc-hud">
         {duo
-          ? names.map((n, i) => <span key={n} className={`arc-chip ${turn === i && !done ? 'turn' : ''}`}>{n}: {scores[i]}</span>)
+          ? names.map((n, i) => (
+            <span key={n} className={`hud-chip arc-player ${turn === i && !done ? 'turn' : ''}`} style={{ '--p': PLAYER_COLORS[i] }}>
+              <span className="arc-swatch" />{n} {scores[i]}
+            </span>
+          ))
           : <>
-            <span className="arc-chip">🃏 {moves} intentos</span>
-            <span className="arc-chip">✅ {Object.keys(found).length}/{PAIRS}</span>
-            {best !== null && <span className="arc-chip">🏆 Récord: {best}</span>}
+            <span className="hud-chip">Intentos {moves}</span>
+            <span className="hud-chip"><PixelArt name="heart" size={12} /> {Object.keys(found).length}/{PAIRS}</span>
+            {best !== null && <span className="hud-chip"><PixelArt name="trophy" size={12} /> {best}</span>}
           </>}
-        <button className="arc-btn small ghost" onClick={restart}>↺ Nuevo tablero</button>
+        <button className="pixel-btn ghost small" onClick={restart}>Nuevo tablero</button>
       </div>
       <div className="mem-grid">
         {deck.map((card, i) => {
@@ -102,7 +110,7 @@ export default function Memoria({ mode = 'solo' }) {
               onClick={() => flip(i)}
               aria-label={up ? card.hero.name : 'Carta boca abajo'}
             >
-              <span className="mem-face mem-back">🌀</span>
+              <span className="mem-face mem-back"><img src={SPRITES.yessenia} alt="" className="pixel-img" /></span>
               <span className="mem-face mem-front">
                 <img src={card.hero.sprite} alt="" className="pixel-img" loading="lazy" />
                 <small>{card.hero.name.split(' ')[0]}</small>
@@ -112,18 +120,22 @@ export default function Memoria({ mode = 'solo' }) {
         })}
       </div>
       {last && !done && (
-        <div className="mem-fact" key={last.id}>
-          <strong>{last.name}</strong> · {last.country}
-          <p>{last.bio}</p>
+        <div className="pixel-panel mem-fact anim-pop" key={last.id}>
+          <img src={last.sprite} alt="" className="pixel-img" />
+          <div>
+            <p className="arc-label">{last.name}</p>
+            <p className="arc-muted">{last.bio}</p>
+          </div>
         </div>
       )}
       {done && (
-        <div className="arc-result">
-          <div className="arc-result-emoji">{duo && winner === null ? '🤝' : '🏆'}</div>
-          <h2>{duo ? (winner === null ? '¡Empate!' : `¡Ganó ${names[winner]}!`) : `¡Lo lograste en ${moves} intentos!`}</h2>
-          <p>Conociste a {PAIRS} científicas, inventoras e ingenieras reales.</p>
-          <button className="arc-btn" onClick={restart}>🔄 Jugar otra vez</button>
-        </div>
+        <ResultBanner
+          title={duo ? (winner === null ? 'Empate' : `¡Ganó ${names[winner]}!`) : `¡${moves} intentos!`}
+          text={`Conociste a ${PAIRS} mujeres reales de la ciencia y la tecnología.`}
+          icon={duo && winner === null ? 'smile' : 'trophy'}
+          onAgain={restart}
+          againLabel="Otra vez"
+        />
       )}
     </div>
   )

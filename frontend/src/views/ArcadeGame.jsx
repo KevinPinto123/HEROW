@@ -2,7 +2,10 @@ import { Suspense, lazy, useEffect, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { getArcadeGame } from '../arcade/catalog'
 import { useMatchmaking } from '../arcade/online'
+import PixelArt from '../arcade/PixelArt'
 import { SafetyNote } from '../arcade/Safety'
+import SceneBg from '../components/SceneBg'
+import { BACKGROUNDS, SPRITES } from '../data/assets'
 import { api } from '../lib/api'
 import { LIVE_ENABLED } from '../lib/live'
 import { play } from '../lib/sfx'
@@ -23,6 +26,14 @@ function ConsoleGame({ game, option }) {
   return <LocalTurnGame key={option} gameId={game.id} mode={mode} level={level} />
 }
 
+function HowTo({ game }) {
+  return (
+    <ol className="arc-howto">
+      {game.howTo.map(line => <li key={line}>{line}</li>)}
+    </ol>
+  )
+}
+
 // ───────── Online ─────────
 function OnlineLobby({ game }) {
   const { session } = usePlayer()
@@ -41,14 +52,12 @@ function OnlineLobby({ game }) {
 
   if (!session) {
     return (
-      <div className="arc-panel center">
-        <h3>🌐 Para jugar online necesitas tu cuenta HEROW</h3>
-        <p>Es gratis y no pedimos tu correo: solo un nombre de usuaria y una contraseña. Las cuentas son para chicas de 15 a 17 años.</p>
+      <div className="pixel-panel arc-panel center">
+        <p>Para jugar online necesitas tu cuenta HEROW.</p>
         <div className="arc-row">
-          <Link className="arc-btn" to="/registro" state={{ from: `/arcade/${game.id}` }}>✨ Crear mi cuenta</Link>
-          <Link className="arc-btn ghost" to="/entrar" state={{ from: `/arcade/${game.id}` }}>Ya tengo cuenta</Link>
+          <Link className="pixel-btn gold small" to="/registro" state={{ from: `/arcade/${game.id}` }}>Crear cuenta</Link>
+          <Link className="pixel-btn ghost small" to="/entrar" state={{ from: `/arcade/${game.id}` }}>Ya tengo cuenta</Link>
         </div>
-        <p className="arc-muted">Mientras tanto, puedes jugar en 🎮 Consola sin registrarte.</p>
       </div>
     )
   }
@@ -60,37 +69,38 @@ function OnlineLobby({ game }) {
 
   if (mm.phase === 'searching' || mm.phase === 'joining' || mm.phase === 'hosting') {
     return (
-      <div className="arc-panel center">
-        <div className="arc-spinner" aria-hidden="true">🌀</div>
-        {mm.phase === 'searching' && <h3>Buscando rival para {game.name}…</h3>}
-        {mm.phase === 'joining' && <h3>Entrando a la sala de tu amiga…</h3>}
-        {mm.phase === 'hosting' && (
-          mm.code
-            ? <>
-              <h3>Tu código de sala</h3>
-              <p className="arc-code" aria-label={`Código ${mm.code.split('').join(' ')}`}>{mm.code}</p>
-              <p>Díselo a tu amiga en persona o por tu grupo del cole. Ella entra a <strong>{game.name} → Online → Unirme con código</strong>.</p>
-            </>
-            : <h3>Creando tu sala…</h3>
-        )}
-        <button className="arc-btn ghost" onClick={() => { play('blip'); mm.cancel() }}>Cancelar</button>
+      <div className="pixel-panel arc-panel center">
+        <img src={SPRITES.yessenia} alt="" className="pixel-img arc-spinner" />
+        {mm.phase === 'searching' && <p className="arc-label">Buscando rival…</p>}
+        {mm.phase === 'joining' && <p className="arc-label">Entrando a la sala…</p>}
+        {mm.phase === 'hosting' && (mm.code
+          ? <>
+            <p className="arc-label">Código de tu sala</p>
+            <p className="arc-code" aria-label={`Código ${mm.code.split('').join(' ')}`}>{mm.code}</p>
+            <p className="arc-muted">Dáselo a tu amiga. Ella entra a Online → Unirme.</p>
+          </>
+          : <p className="arc-label">Creando sala…</p>)}
+        <button className="pixel-btn ghost small" onClick={() => { play('blip'); mm.cancel() }}>Cancelar</button>
       </div>
     )
   }
 
   return (
     <div className="arc-online">
-      <div className="arc-panel">
-        <h3>⚔️ Rival al azar</h3>
-        <p>{game.online.label}. Te emparejamos con otra chica de HEROW.</p>
-        <p className="arc-muted">{waiting > 0 ? `🟢 ${waiting} esperando rival ahora` : 'Nadie esperando ahora: ¡sé la primera!'}</p>
-        <button className="arc-btn" onClick={() => { play('confirm'); mm.find() }}>Buscar rival</button>
+      <div className="pixel-panel arc-panel arc-wide">
+        <p className="arc-label">Cómo jugar</p>
+        <HowTo game={game} />
       </div>
-      <div className="arc-panel">
-        <h3>👭 Con mi amiga</h3>
-        <p>Crea una sala privada y pásale el código. Nadie más puede entrar.</p>
-        <button className="arc-btn" onClick={() => { play('confirm'); mm.host() }}>Crear sala con código</button>
-        <form className="arc-join" onSubmit={(e) => { e.preventDefault(); if (codeInput.trim().length === 5) { play('confirm'); mm.join(codeInput) } }}>
+      <div className="pixel-panel arc-panel">
+        <p className="arc-label">Rival al azar</p>
+        <p className="arc-muted">{game.online.label}</p>
+        <p className="arc-muted"><PixelArt name={waiting > 0 ? 'live' : 'wait'} size={10} /> {waiting > 0 ? `${waiting} esperando` : 'Nadie esperando'}</p>
+        <button className="pixel-btn gold" onClick={() => { play('confirm'); mm.find() }}>Buscar rival</button>
+      </div>
+      <div className="pixel-panel arc-panel">
+        <p className="arc-label">Con mi amiga</p>
+        <button className="pixel-btn cyan" onClick={() => { play('confirm'); mm.host() }}>Crear sala</button>
+        <form className="arc-join" onSubmit={(e) => { e.preventDefault(); if (codeInput.length === 5) { play('confirm'); mm.join(codeInput) } }}>
           <input
             value={codeInput}
             onChange={e => setCodeInput(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 5))}
@@ -98,12 +108,13 @@ function OnlineLobby({ game }) {
             aria-label="Código de la sala de tu amiga"
             autoComplete="off"
           />
-          <button className="arc-btn ghost" type="submit" disabled={codeInput.length !== 5}>Unirme con código</button>
+          <button className="pixel-btn ghost small" type="submit" disabled={codeInput.length !== 5}>Unirme</button>
         </form>
       </div>
       {(mm.phase === 'error' || mm.phase === 'nomatch') && (
-        <p className="arc-error">{mm.phase === 'nomatch' ? 'Nadie más está buscando ahora. Prueba en un rato o invita a una amiga con un código.' : mm.error}</p>
+        <p className="form-error arc-wide">{mm.phase === 'nomatch' ? 'Nadie más está buscando ahora. Prueba en un rato o crea una sala para tu amiga.' : mm.error}</p>
       )}
+      <SafetyNote />
     </div>
   )
 }
@@ -120,53 +131,47 @@ function GamePage({ game }) {
   const [tab, setTab] = useState('console')
   const [option, setOption] = useState(null)
   const online = game.online && LIVE_ENABLED
+  const playing = tab === 'console' && option
 
   return (
-    <div className="arcade-page game">
-      <header className="arc-top">
-        <Link to="/arcade" className="arc-btn small ghost" onClick={() => play('blip')}>◀ Arcade</Link>
-        <h1 className="arc-game-title" style={{ '--a': game.art[0], '--b': game.art[1] }}>{game.icon} {game.name}</h1>
-        <span className="arc-muted">{game.players}</span>
-      </header>
-
-      <div className="arc-tabs" role="tablist">
-        <button role="tab" aria-selected={tab === 'console'} className={`arc-tab ${tab === 'console' ? 'on' : ''}`} onClick={() => { play('blip'); setTab('console') }}>
-          🎮 Jugar en consola <small>sin cuenta</small>
-        </button>
-        {online && (
-          <button role="tab" aria-selected={tab === 'online'} className={`arc-tab ${tab === 'online' ? 'on' : ''}`} onClick={() => { play('blip'); setTab('online') }}>
-            🌐 Jugar online <small>con tu cuenta</small>
-          </button>
-        )}
+    <div className="scene arcade game" style={{ '--tile': game.color }}>
+      <SceneBg src={BACKGROUNDS.hub} dim={0.7} />
+      <div className="hud">
+        {playing
+          ? <button className="pixel-btn ghost small" onClick={() => { play('blip'); setOption(null) }}>◀ Modos</button>
+          : <Link to="/arcade" className="pixel-btn ghost small" onClick={() => play('blip')}>◀ Arcade</Link>}
+        <h1 className="pixel-title arc-title small"><PixelArt name={game.id} size={32} /> {game.name}</h1>
+        {online && !playing
+          ? (
+            <div className="arc-tabs" role="tablist">
+              <button role="tab" aria-selected={tab === 'console'} className={`pixel-btn small ${tab === 'console' ? 'gold' : 'ghost'}`} onClick={() => { play('blip'); setTab('console') }}>
+                <PixelArt name="pad" size={14} /> Consola
+              </button>
+              <button role="tab" aria-selected={tab === 'online'} className={`pixel-btn small ${tab === 'online' ? 'gold' : 'ghost'}`} onClick={() => { play('blip'); setTab('online') }}>
+                <PixelArt name="online" size={14} /> Online
+              </button>
+            </div>
+          )
+          : <span className="arc-hud-spacer" />}
       </div>
 
-      <main className="arc-stage">
-        <Suspense fallback={<p className="arc-muted center">Cargando juego…</p>}>
+      <main className="scene-content arc-stage">
+        <Suspense fallback={<p className="arc-muted center">Cargando…</p>}>
           {tab === 'console' && !option && (
-            <div className="arc-panel">
-              <p>{game.about}</p>
-              <div className="arc-col">
-                {game.console.map(o => (
-                  <button key={o.id} className="arc-btn big" onClick={() => { play('confirm'); setOption(o.id) }}>
-                    {o.label}
-                    {o.hint && <small>{o.hint}</small>}
+            <div className="pixel-panel arc-panel">
+              <p className="arc-label">Cómo jugar</p>
+              <HowTo game={game} />
+              <div className="arc-modes">
+                {game.console.map((o, i) => (
+                  <button key={o.id} className={`pixel-btn ${i === 0 ? 'gold' : 'cyan'}`} onClick={() => { play('confirm'); setOption(o.id) }}>
+                    ▶ {o.label}
                   </button>
                 ))}
               </div>
             </div>
           )}
-          {tab === 'console' && option && (
-            <>
-              <button className="arc-btn small ghost arc-back" onClick={() => { play('blip'); setOption(null) }}>◀ Cambiar modo</button>
-              <ConsoleGame game={game} option={option} />
-            </>
-          )}
-          {tab === 'online' && online && (
-            <>
-              <OnlineLobby game={game} />
-              <SafetyNote />
-            </>
-          )}
+          {playing && <ConsoleGame game={game} option={option} />}
+          {tab === 'online' && online && <OnlineLobby game={game} />}
         </Suspense>
       </main>
     </div>

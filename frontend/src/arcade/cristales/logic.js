@@ -3,12 +3,13 @@ import { CRISTALES } from '../rules'
 
 export const N = CRISTALES.SIZE
 export const GEMS = [
-  { icon: '⚛️', name: 'Átomo', color: '#8B5CF6' },
-  { icon: '🧬', name: 'ADN', color: '#EC4899' },
-  { icon: '💡', name: 'Idea', color: '#F59E0B' },
-  { icon: '🚀', name: 'Cohete', color: '#06B6D4' },
-  { icon: '🪐', name: 'Planeta', color: '#F97316' },
-  { icon: '🤖', name: 'Robot', color: '#22C55E' },
+  // Cada cristal tiene forma y color propios (se distinguen aunque no se vean bien los colores).
+  { sprite: 'gemDiamond', name: 'Cristal morado' },
+  { sprite: 'gemHeart', name: 'Cristal rosa' },
+  { sprite: 'gemStar', name: 'Cristal dorado' },
+  { sprite: 'gemSquare', name: 'Cristal cian' },
+  { sprite: 'gemCircle', name: 'Cristal naranja' },
+  { sprite: 'gemTriangle', name: 'Cristal verde' },
 ]
 
 let nextId = 1

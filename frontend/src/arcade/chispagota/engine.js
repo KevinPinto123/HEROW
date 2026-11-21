@@ -18,7 +18,7 @@ export const PHYS = {
 export const LEVELS = [
   {
     name: 'El laboratorio',
-    tip: 'Chispa no puede tocar el agua 💧 y Gota no puede tocar la lava 🔥. ¡Las dos deben saltar el ácido verde!',
+    tip: '',
     map: [
       '########################',
       '#......................#',
@@ -38,7 +38,7 @@ export const LEVELS = [
   },
   {
     name: 'La compuerta',
-    tip: 'Una pisa el botón 🟣 para abrir la compuerta mientras la otra pasa. ¡Trabajen en equipo!',
+    tip: 'Una pisa el botón morado mientras la otra cruza la compuerta.',
     map: [
       '########################',
       '#.......#..............#',
@@ -58,7 +58,7 @@ export const LEVELS = [
   },
   {
     name: 'La torre',
-    tip: 'Suban juntas. Arriba, Chispa va a la izquierda y Gota a la derecha.',
+    tip: 'Arriba: Chispa a la izquierda, Gota a la derecha.',
     map: [
       '########################',
       '#......................#',

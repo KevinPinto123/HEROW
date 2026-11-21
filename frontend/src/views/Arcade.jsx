@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom'
 import { ARCADE_GAMES } from '../arcade/catalog'
-import { SafetyNote } from '../arcade/Safety'
+import PixelArt from '../arcade/PixelArt'
+import SceneBg from '../components/SceneBg'
+import { BACKGROUNDS } from '../data/assets'
 import { play } from '../lib/sfx'
 import { usePlayer } from '../lib/usePlayer'
 
@@ -8,60 +10,35 @@ export default function Arcade() {
   const { session } = usePlayer()
 
   return (
-    <div className="arcade-page">
-      <header className="arc-top">
-        <Link to="/" className="arc-logo" onClick={() => play('blip')}>🌀 HEROW</Link>
-        <nav className="arc-top-links">
-          {session
-            ? <Link to="/dashboard" className="arc-btn small">🏠 Mi aventura</Link>
-            : <>
-              <Link to="/entrar" state={{ from: '/arcade' }} className="arc-btn small ghost">Entrar</Link>
-              <Link to="/registro" state={{ from: '/arcade' }} className="arc-btn small">Crear cuenta</Link>
-            </>}
-        </nav>
-      </header>
+    <div className="scene arcade">
+      <SceneBg src={BACKGROUNDS.hub} dim={0.55} />
+      <div className="hud">
+        <Link to={session ? '/dashboard' : '/'} className="pixel-btn ghost small" onClick={() => play('blip')}>◀ HEROW</Link>
+        <h1 className="pixel-title arc-title">ARCADE</h1>
+        {session
+          ? <span className="arc-hud-spacer" />
+          : <Link to="/entrar" state={{ from: '/arcade' }} className="pixel-btn ghost small" onClick={() => play('blip')}>Entrar</Link>}
+      </div>
 
-      <section className="arc-hero">
-        <h1>Arcade HEROW</h1>
-        <p>Juegos gratis para pensar, crear y divertirte. <strong>Juega en consola sin registrarte</strong>, o crea tu cuenta para retar a otras chicas online.</p>
-      </section>
-
-      <main className="arc-grid">
-        {ARCADE_GAMES.map((g, i) => (
+      <main className="scene-content arc-grid">
+        {ARCADE_GAMES.map(g => (
           <Link
             key={g.id}
             to={`/arcade/${g.id}`}
             className="arc-tile"
-            style={{ '--a': g.art[0], '--b': g.art[1], '--tilt': `${(i % 3) - 1}deg` }}
+            style={{ '--tile': g.color }}
             onMouseEnter={() => play('blip')}
-            onClick={() => play('select')}
+            onClick={() => play('portal')}
           >
-            <div className="arc-thumb">
-              <span className="arc-thumb-icon">{g.icon}</span>
-              {g.badge && <span className="arc-badge">{g.badge}</span>}
-              <span className="arc-modes">
-                <span title="Se juega sin cuenta">🎮</span>
-                {g.online && <span title="También online">🌐</span>}
-              </span>
-            </div>
-            <div className="arc-tile-name">{g.name}</div>
-            <div className="arc-tile-tag">{g.tagline}</div>
+            <span className="arc-thumb"><PixelArt name={g.id} size={96} /></span>
+            <span className="arc-tile-name">{g.name}</span>
+            <span className="arc-tile-modes">
+              <PixelArt name="pad" size={16} title="Se juega sin cuenta" />
+              {g.online && <PixelArt name="online" size={16} title="También online" />}
+            </span>
           </Link>
         ))}
       </main>
-
-      <section className="arc-info">
-        <div className="arc-legend">
-          <h3>¿Cómo se juega?</h3>
-          <p><strong>🎮 Consola:</strong> en este equipo, sin cuenta. Contra la compu o con alguien a tu lado.</p>
-          <p><strong>🌐 Online:</strong> contra otra chica de HEROW o con tu amiga usando un código. Necesitas tu cuenta (de 15 a 17 años).</p>
-        </div>
-        <SafetyNote />
-      </section>
-
-      <footer className="arc-foot">
-        <Link to="/">← Volver a HEROW</Link> · <Link to="/seguridad">Seguridad</Link> · <Link to="/privacidad">Privacidad</Link>
-      </footer>
     </div>
   )
 }

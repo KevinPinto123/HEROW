@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { api } from '../lib/api'
 import { play } from '../lib/sfx'
+import PixelArt from './PixelArt'
 
 const REASONS = [
   ['nombre_ofensivo', 'Su nombre es ofensivo'],
@@ -28,26 +29,26 @@ export function ReportButton({ roomId, rival }) {
 
   return (
     <>
-      <button className="arc-btn small ghost danger" onClick={() => setOpen(true)}>🚩 Reportar</button>
+      <button className="pixel-btn ghost small arc-report" onClick={() => setOpen(true)}><PixelArt name="flag" size={12} /> Reportar</button>
       {open && (
         <div className="arc-modal" role="dialog" aria-modal="true" aria-label="Reportar a la rival">
-          <div className="arc-modal-box">
+          <div className="pixel-panel arc-modal-box">
             {sent ? (
               <>
-                <h3>Gracias por avisarnos 💜</h3>
+                <p className="arc-label">Gracias por avisarnos</p>
                 <p>Bloqueamos a <strong>{rival}</strong>: no volverán a emparejarte con ella. El equipo HEROW revisará el reporte.</p>
                 <p className="arc-muted">Si alguien te hizo sentir mal, cuéntaselo también a una persona adulta de confianza.</p>
-                <button className="arc-btn" onClick={() => setOpen(false)}>Entendido</button>
+                <button className="pixel-btn gold small" onClick={() => setOpen(false)}>Entendido</button>
               </>
             ) : (
               <>
-                <h3>Reportar a {rival}</h3>
+                <p className="arc-label">Reportar a {rival}</p>
                 <p>La partida terminará y no volverán a emparejarte con ella.</p>
                 <div className="arc-col">
-                  {REASONS.map(([id, text]) => <button key={id} className="arc-btn ghost" onClick={() => send(id)}>{text}</button>)}
+                  {REASONS.map(([id, text]) => <button key={id} className="pixel-btn ghost small" onClick={() => send(id)}>{text}</button>)}
                 </div>
-                {error && <p className="arc-error">{error}</p>}
-                <button className="arc-btn small ghost" onClick={() => setOpen(false)}>Cancelar</button>
+                {error && <p className="form-error">{error}</p>}
+                <button className="pixel-btn ghost small" onClick={() => setOpen(false)}>Cancelar</button>
               </>
             )}
           </div>
@@ -59,15 +60,10 @@ export function ReportButton({ roomId, rival }) {
 
 export function SafetyNote() {
   return (
-    <div className="arc-safety">
-      <h3>🛡️ Jugar online en HEROW es seguro</h3>
-      <ul>
-        <li><strong>Sin chat:</strong> solo reacciones con emojis (👏 💜 🔥 😮 💪 🤝).</li>
-        <li><strong>Sin datos personales:</strong> las demás solo ven tu nombre de usuaria.</li>
-        <li><strong>Juega con tu amiga:</strong> crea una sala privada y pásale el código en persona.</li>
-        <li><strong>Reportar y bloquear:</strong> con un toque, y no vuelves a cruzarte con esa persona.</li>
-        <li><strong>Árbitro justo:</strong> el servidor revisa cada jugada; nadie puede hacer trampa.</li>
-      </ul>
-    </div>
+    <ul className="arc-safety arc-wide">
+      <li>Sin chat: solo reacciones.</li>
+      <li>Las demás solo ven tu nombre de usuaria.</li>
+      <li>Puedes reportar y bloquear en cualquier momento.</li>
+    </ul>
   )
 }

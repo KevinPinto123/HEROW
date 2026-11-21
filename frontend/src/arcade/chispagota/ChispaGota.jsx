@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { play } from '../../lib/sfx'
+import PixelArt from '../PixelArt'
+import { drawSprite } from '../sprites'
+import { ResultBanner } from '../ui'
 import { HEROES, LEVELS, T, gemTotals, loadLevel, step } from './engine'
 
 const DT = 1 / 60
@@ -104,9 +107,7 @@ function draw(ctx, s, t, activeIdx) {
     ctx.strokeStyle = hero.color
     ctx.lineWidth = 3
     ctx.strokeRect(x + 3.5, y + 5.5, T - 7, 2 * T - 7)
-    ctx.font = '18px system-ui'
-    ctx.textAlign = 'center'
-    ctx.fillText(hero.element === 'fire' ? '🔥' : '💧', x + T / 2, y + 28)
+    drawSprite(ctx, hero.element === 'fire' ? 'flame' : 'drop', x + 8, y + 14, 2)
   }
   for (const gem of s.gems) {
     if (gem.taken) continue
@@ -271,46 +272,41 @@ export default function ChispaGota({ mode = 'duo' }) {
 
   if (finished) {
     return (
-      <div className="arc-result">
-        <div className="arc-result-emoji">🏆</div>
-        <h2>¡Terminaron el laboratorio!</h2>
-        <p>Chispa y Gota superaron los {LEVELS.length} niveles trabajando en equipo. Así trabajan las científicas de verdad: cada una aporta lo que sabe hacer.</p>
-        <button className="arc-btn" onClick={() => { setFinished(false); setLevel(0); restart(0) }}>🔄 Jugar otra vez</button>
-      </div>
+      <ResultBanner
+        title="¡Laboratorio superado!"
+        text="Así trabajan las científicas: cada una aporta lo que sabe hacer."
+        onAgain={() => { setFinished(false); setLevel(0); restart(0) }}
+        againLabel="Otra vez"
+      />
     )
   }
 
   return (
     <div className="cg-wrap">
       <div className="arc-hud">
-        <span className="arc-chip">Nivel {level + 1}/{LEVELS.length} · {def.name}</span>
-        <span className="arc-chip" style={{ color: HEROES[0].color }}>🔥 {hud.gems[0]}/{totals.f}</span>
-        <span className="arc-chip" style={{ color: HEROES[1].color }}>💧 {hud.gems[1]}/{totals.w}</span>
-        <span className="arc-chip">⏱ {Math.floor(hud.time)} s</span>
-        {solo && <button className="arc-btn small" onClick={switchHero}>🔄 Cambiar a {HEROES[1 - active].name}</button>}
-        <button className="arc-btn small ghost" onClick={() => restart()}>↺ Reiniciar</button>
+        <span className="hud-chip">Nivel {level + 1}/{LEVELS.length}</span>
+        <span className="hud-chip"><PixelArt name="flame" size={12} /> {hud.gems[0]}/{totals.f}</span>
+        <span className="hud-chip"><PixelArt name="drop" size={12} /> {hud.gems[1]}/{totals.w}</span>
+        <span className="hud-chip"><PixelArt name="clock" size={12} /> {Math.floor(hud.time)}</span>
+        {solo && <button className="pixel-btn cyan small" onClick={switchHero}>Cambiar a {HEROES[1 - active].name}</button>}
+        <button className="pixel-btn ghost small" onClick={() => restart()}>Reiniciar</button>
       </div>
-      <p className="cg-tip">💡 {def.tip}</p>
+      {def.tip && <p className="arc-tip">{def.tip}</p>}
       <div className="cg-stage">
         <canvas ref={canvasRef} width={24 * T} height={14 * T} className="cg-canvas" aria-label={`Chispa y Gota, nivel ${level + 1}`} />
         {hud.status === 'dead' && (
           <div className="cg-overlay">
-            <p>{hud.deadId === 'chispa' ? '💦 ¡Chispa se apagó!' : '🔥 ¡Gota se evaporó!'}</p>
-            <button className="arc-btn" onClick={() => restart()}>↺ Intentar de nuevo</button>
+            <p className="arc-label">{hud.deadId === 'chispa' ? '¡Chispa se apagó!' : '¡Gota se evaporó!'}</p>
+            <button className="pixel-btn gold" onClick={() => restart()}>▶ Otra vez</button>
           </div>
         )}
         {hud.status === 'won' && (
           <div className="cg-overlay">
-            <p>✨ ¡Nivel superado en {Math.floor(hud.time)} s!</p>
-            <button className="arc-btn" onClick={next}>{level + 1 < LEVELS.length ? '▶ Siguiente nivel' : '🏆 Ver final'}</button>
+            <p className="arc-label">¡Nivel superado!</p>
+            <button className="pixel-btn gold" onClick={next}>▶ {level + 1 < LEVELS.length ? 'Siguiente nivel' : 'Final'}</button>
           </div>
         )}
       </div>
-      <p className="cg-keys">
-        {solo
-          ? '⌨️ Flechas o WASD para mover y saltar · Tab o Q para cambiar de heroína · R reinicia'
-          : '⌨️ Chispa: W A D · Gota: ← ↑ → · R reinicia'}
-      </p>
       <div className="cg-pads">
         {solo
           ? <Pad label={HEROES[active].name} color={HEROES[active].color} onChange={setTouch(0)} />

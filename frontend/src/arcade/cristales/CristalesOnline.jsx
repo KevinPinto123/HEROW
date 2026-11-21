@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { api } from '../../lib/api'
-import { REACTIONS } from '../../lib/live'
 import { play } from '../../lib/sfx'
 import { PLAYER_COLORS } from '../colors'
 import { useArcadeRoom } from '../online'
+import PixelArt from '../PixelArt'
 import { ReportButton } from '../Safety'
+import { LiveStatus, ReactionBar, ReactionBubble, ResultBanner } from '../ui'
 import { CristalesBoard } from './Cristales'
 
 const SEND_EVERY_MS = 1000
@@ -52,45 +53,40 @@ export default function CristalesOnline({ room, onAgain, onExit }) {
   let overlay = null
   if (end) {
     const won = end.winner === me
+    const title = end.reason === 'reported' ? 'Duelo terminado' : end.winner === null ? 'Empate' : won ? '¡Ganaste!' : 'Buen duelo'
+    const text = end.reason === 'left' ? (won ? 'Tu rival salió del duelo.' : 'Saliste del duelo.') : `${shown[me]} – ${shown[rivalIdx]}`
     overlay = (
       <div className="cg-overlay">
-        <p>{end.reason === 'left' ? (won ? 'Tu rival salió del duelo. ¡Ganaste!' : 'Saliste del duelo.') : end.reason === 'reported' ? 'El duelo terminó por un reporte.' : end.winner === null ? '🤝 ¡Empate!' : won ? '🏆 ¡Ganaste el duelo!' : '💪 ¡Buen duelo!'}</p>
-        <p>{shown[me]} – {shown[rivalIdx]}</p>
-        <div className="arc-row">
-          <button className="arc-btn" onClick={onAgain}>⚔️ Otro duelo</button>
-          <button className="arc-btn ghost" onClick={onExit}>Salir</button>
-        </div>
+        <ResultBanner title={title} text={text} icon={end.winner === null ? 'smile' : won ? 'trophy' : 'bolt'} onAgain={onAgain} againLabel="Otro duelo"
+          extra={<button className="pixel-btn ghost small" onClick={onExit}>Salir</button>} />
       </div>
     )
   } else if (now < startsAt) {
-    overlay = <div className="cg-overlay"><p className="cr-countdown">{countdown > 0 ? countdown : '¡Ya!'}</p><p>Mismo tablero para las dos. ¡A sumar cristales!</p></div>
+    overlay = <div className="cg-overlay"><p className="pixel-title cr-countdown">{countdown > 0 ? countdown : '¡Ya!'}</p></div>
   } else if (now >= endsAt) {
-    overlay = <div className="cg-overlay"><p>⏰ ¡Tiempo! Calculando…</p></div>
+    overlay = <div className="cg-overlay"><p className="arc-label">¡Tiempo!</p></div>
   }
 
   return (
     <div className="cr-wrap">
       <div className="arc-hud">
-        <span className={`arc-chip ${status === 'ready' ? 'ok' : ''}`}>{status === 'ready' ? '🟢 En vivo' : '🟡 Reconectando…'}</span>
-        <span className="arc-chip player" style={{ '--p': PLAYER_COLORS[me] }}>
-          {bubbles[me] && <span className="reaction-bubble" key={bubbles[me].key}>{bubbles[me].emoji}</span>}
-          Tú ⭐ {mine}
+        <LiveStatus status={status} />
+        <span className="hud-chip arc-player" style={{ '--p': PLAYER_COLORS[me] }}>
+          <ReactionBubble bubble={bubbles[me]} />
+          <span className="arc-swatch" />Tú {mine}
         </span>
-        <span className="arc-chip player" style={{ '--p': PLAYER_COLORS[rivalIdx] }}>
-          {bubbles[rivalIdx] && <span className="reaction-bubble" key={bubbles[rivalIdx].key}>{bubbles[rivalIdx].emoji}</span>}
-          {room.players[rivalIdx].username} ⭐ {shown[rivalIdx] ?? 0}
+        <span className="hud-chip arc-player" style={{ '--p': PLAYER_COLORS[rivalIdx] }}>
+          <ReactionBubble bubble={bubbles[rivalIdx]} />
+          <span className="arc-swatch" />{room.players[rivalIdx].username} {shown[rivalIdx] ?? 0}
         </span>
-        <span className="arc-chip">⏱ {now < startsAt ? 90 : left} s</span>
+        <span className="hud-chip"><PixelArt name="clock" size={12} /> {now < startsAt ? 90 : left}</span>
         {!end && <ReportButton roomId={room.id} rival={room.players[rivalIdx].username} />}
       </div>
       <div className="cr-stage">
         <CristalesBoard seed={room.state.seed} running={running} onScore={(v) => { myScore.current = v; setMineLocal(v) }} />
         {overlay}
       </div>
-      <div className="arc-reactions" aria-label="Reacciones">
-        {REACTIONS.map(e => <button key={e} className="arc-react" onClick={() => react(e)}>{e}</button>)}
-        <span className="arc-muted">Solo reacciones: en HEROW no hay chat.</span>
-      </div>
+      <ReactionBar onReact={react} />
     </div>
   )
 }
