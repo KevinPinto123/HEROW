@@ -88,7 +88,7 @@ try {
 
   // Seguridad: token falso rechazado, y una intrusa no entra a la partida.
   const fake = connect('token-falso', match.channelId)
-  await wait(1500)
+  for (let i = 0; i < 40 && !fake.errors.length; i++) await wait(250)
   ok(fake.status !== 'ready' && fake.errors.includes('unauthorized'), 'Un token falso no puede conectarse')
 
   // Reacciones: solo de la lista y las firma el servidor con el id real.
@@ -150,8 +150,8 @@ try {
   const c = await makePlayer('c', 'hamilton', 'robotics')
   players.push(c)
   const spy = connect(c.token, match.channelId)
-  await wait(1500)
-  ok(spy.status !== 'ready' && spy.errors.includes('forbidden'), 'Una jugadora ajena no puede entrar a la partida')
+  for (let i = 0; i < 40 && spy.status !== 'ready' && !spy.errors.length; i++) await wait(250)
+  ok(spy.status !== 'ready' && spy.errors.includes('forbidden'), 'Una jugadora ajena no puede entrar a la partida', `respuesta: ${spy.status} ${spy.errors.join(',')}`)
   spy.ws.close()
 
   // Abandono: nueva partida y B se va.
