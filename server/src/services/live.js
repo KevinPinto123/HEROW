@@ -1,13 +1,14 @@
 import { randomUUID } from 'node:crypto'
-import { config } from '../config.js'
 import { HEROINES, ROUND_POINTS } from '../data/game.js'
+import { SERVER_SENDER, broadcast, defineChannel, memberIds } from '../realtime/hub.js'
 import { getPlayerState } from './progress.js'
 import { pickQuestion } from './questions.js'
 import { db, must } from './supabase.js'
 
 // ───────── Partidas 1 vs 1 en vivo ─────────
 // El servidor es la única autoridad: elige preguntas, guarda la respuesta correcta,
-// mide el tiempo, decide quién gana y reparte puntos. Portal solo transmite en vivo.
+// mide el tiempo, decide quién gana y reparte puntos. HEROW Live (WebSocket propio)
+// solo transmite los eventos a las dos jugadoras.
 
 export const LIVE = {
   ROUNDS: 5,
@@ -16,26 +17,52 @@ export const LIVE = {
   START_DELAY_MS: 4_000, // tiempo para que ambas se conecten al canal
   BETWEEN_ROUNDS_MS: 5_000,
   QUEUE_WAIT_MS: 25_000,
+  DISCONNECT_GRACE_MS: 30_000, // si una se desconecta más de esto, pierde por abandono
 }
-export const SERVER_SENDER = 'herow-server'
+export { SERVER_SENDER }
 
-const PORTAL_API = 'https://api.useportal.co'
 const queues = new Map() // portal -> entrada en espera
 const queuedUser = new Map() // userId -> portal
 const matches = new Map() // matchId -> partida
 
-/** Publica un evento del juego en el canal de la partida (mensaje persistente). */
+const channelOf = (matchId) => `match:${matchId}`
+
+/** Publica un evento del juego: queda en el historial y llega a quien esté conectada. */
 async function publish(match, type, content) {
-  try {
-    const res = await fetch(`${PORTAL_API}/v1/channels/${match.channelId}/messages`, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${config.portal.secretKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ senderId: SERVER_SENDER, type, content }),
-      signal: AbortSignal.timeout(8_000),
-    })
-    if (!res.ok) console.error(`[live] publish ${type}: HTTP ${res.status}`)
-  } catch (err) {
-    console.error(`[live] publish ${type}:`, err.message)
+  const m = { id: match.events.length + 1, type, content, sender: { id: SERVER_SENDER }, at: Date.now() }
+  match.events.push(m)
+  broadcast(match.channelId, m)
+}
+
+// Canal de cada partida: solo entran sus dos jugadoras; al entrar reciben todo lo ocurrido.
+defineChannel('match', {
+  canJoin: (userId, name) => Boolean(getMatchFor(name.slice('match:'.length), userId)),
+  history: (name) => matches.get(name.slice('match:'.length))?.events ?? [],
+  reactions: true,
+  onMembers: (name, online) => {
+    const match = matches.get(name.slice('match:'.length))
+    if (match) watchConnections(match, online)
+  },
+})
+
+// Sala común: solo sirve para contar cuántas jugadoras hay en línea.
+defineChannel('lobby', {})
+
+/** Si una jugadora pierde la conexión y no vuelve en 30 s, la partida termina por abandono. */
+function watchConnections(match, online) {
+  if (match.status !== 'playing') return
+  for (const p of match.players) {
+    if (online.has(p.userId)) {
+      p.seen = true
+      clearTimeout(p.dropTimer)
+      p.dropTimer = null
+    } else if (p.seen && !p.dropTimer) {
+      p.dropTimer = setTimeout(() => {
+        p.dropTimer = null
+        if (match.status === 'playing' && !memberIds(match.channelId).has(p.userId)) endMatch(match, 'left', p.userId)
+      }, LIVE.DISCONNECT_GRACE_MS)
+      p.dropTimer.unref?.()
+    }
   }
 }
 
@@ -156,6 +183,7 @@ async function endMatch(match, reason, leaverId = null) {
   if (match.status === 'ended') return
   match.status = 'ended'
   clearTimeout(match.round?.timer)
+  for (const p of match.players) clearTimeout(p.dropTimer)
   const [p1, p2] = match.players
   const s1 = match.scores[p1.userId] ?? 0
   const s2 = match.scores[p2.userId] ?? 0
@@ -171,9 +199,10 @@ function createMatch(portal, a, b) {
   const id = randomUUID()
   const match = {
     id,
-    channelId: `herow-match-${id}`,
+    channelId: channelOf(id),
     portal,
-    players: [a, b],
+    players: [{ ...a }, { ...b }],
+    events: [],
     scores: { [a.userId]: 0, [b.userId]: 0 },
     points: { [a.userId]: 0, [b.userId]: 0 },
     status: 'playing',

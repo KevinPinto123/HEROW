@@ -605,7 +605,7 @@ sequenceDiagram
 [![Node.js](https://img.shields.io/badge/Node_+_Express-0F0A2E?style=for-the-badge&logo=nodedotjs&logoColor=34D399)](https://expressjs.com/)
 [![Gemini](https://img.shields.io/badge/Gemini-0F0A2E?style=for-the-badge&logo=googlegemini&logoColor=8B5CF6)](https://ai.google.dev/)
 [![OpenAI](https://img.shields.io/badge/OpenAI-0F0A2E?style=for-the-badge&logo=openai&logoColor=FFFFFF)](https://platform.openai.com/)
-[![Portal](https://img.shields.io/badge/Portal_Realtime-0F0A2E?style=for-the-badge&logoColor=22D3EE)](https://useportal.co/)
+[![WebSocket](https://img.shields.io/badge/HEROW_Live-WebSocket-0F0A2E?style=for-the-badge&logoColor=22D3EE)](#-en-vivo-herow-live)
 
 </div>
 
@@ -629,15 +629,15 @@ HEROW está diseñado con la protección de menores como **prioridad absoluta**:
 
 ## 🚀 Instalación y Desarrollo
 
-Requisitos: Node.js 22 o superior, un proyecto de Supabase, claves de Gemini y OpenAI, y un proyecto de Portal.
+Requisitos: Node.js 22 o superior, un proyecto de Supabase, y claves de Gemini y OpenAI. El multijugador en vivo no necesita ningún servicio extra.
 
 ```bash
 # 1️⃣ Instala todo (raíz, frontend y backend)
 npm run setup
 
 # 2️⃣ Variables de entorno (ver los comentarios de cada archivo)
-cp server/.env.example server/.env              # claves secretas: Supabase, Gemini, OpenAI, Portal (sk_)
-cp frontend/.env.example frontend/.env.local    # solo públicas: Supabase publishable, Portal pk_
+cp server/.env.example server/.env              # claves secretas: Supabase, Gemini, OpenAI
+cp frontend/.env.example frontend/.env.local    # solo públicas: Supabase publishable, URL del backend
 
 # 3️⃣ Base de datos: pega supabase/schema.sql en Supabase → SQL Editor → Run (una sola vez)
 
@@ -664,8 +664,7 @@ Con `DEV_TOOLS=true` en `server/.env`, la pantalla **Entrar** muestra botones pa
 | `npm run test:schema` | Prueba `supabase/schema.sql` en un Postgres local |
 | `npm run check:ai` | Verifica que Gemini/OpenAI respondan bien |
 | `npm run test:e2e --prefix server` | Prueba de punta a punta (registro, combate, misión, nivel, oportunidades, seguridad) |
-| `npm run test:live --prefix server` | Partida en vivo real entre 2 jugadoras por Portal |
-| `npm run portal:deploy` | Despliega `portal/portal.config.ts` |
+| `npm run test:live --prefix server` | Partida en vivo real entre 2 jugadoras (WebSocket de HEROW Live) |
 
 ### 🌀 Waitlist (colegios, aliados, inversores)
 
@@ -764,17 +763,29 @@ registra la fecha en `leads.consent_at`, que también sale en el CSV de exportac
 | Frontend | Vercel (proyecto `herow`) | https://herow-six.vercel.app |
 | Backend | Railway (proyecto `herow`, servicio `herow-api`) | https://herow-api-production.up.railway.app |
 | Base de datos | Supabase | — |
-| Tiempo real | Portal | — |
+| Tiempo real | HEROW Live (WebSocket en el mismo backend de Railway) | `wss://herow-api-production.up.railway.app/live/ws` |
 
 - **Backend:** `cd server && railway up --service herow-api`. Variables: `node tools/railway-env.mjs --frontend https://herow-six.vercel.app` (lee `server/.env`, nunca sube el archivo).
 - **Frontend:** `cd frontend && vercel deploy --prod`. Variables `VITE_*` en el proyecto de Vercel.
-- **Portal:** el dominio del frontend debe estar en los orígenes permitidos: `npx portal origins add https://herow-six.vercel.app`.
+- **En vivo:** no hay que configurar nada aparte. El WebSocket solo acepta conexiones desde los dominios de `CORS_ORIGIN` (separados por comas).
 - En producción `DEV_TOOLS=false`: no hay atajos de puntos ni botones de demo; se entra con usuario y contraseña.
 
 ### 🧠 Cómo funciona
 - **Niveles:** 500 / 1000 / 1500 puntos + una misión real (perfil profesional → primer post → mini proyecto) que revisa la IA + un paso en el mundo real (LinkedIn o portafolio, postular a una oportunidad) + vencer al NoPuedo.
 - **Agente:** ajusta la dificultad según tu precisión, genera preguntas nuevas con IA, busca becas y cursos reales cada 12 h (verifica enlaces, resume, detecta convocatorias cerradas) y los ordena según tu desempeño.
-- **En vivo:** emparejamiento 1 vs 1 por portal con Portal; el servidor decide preguntas, tiempos y puntos. Solo hay reacciones, no chat.
+- **En vivo:** emparejamiento 1 vs 1 por portal con HEROW Live; el servidor decide preguntas, tiempos y puntos. Solo hay reacciones, no chat.
+
+#### 🔴 En vivo (HEROW Live)
+
+El multijugador usa un **WebSocket propio** en el mismo backend (`/live/ws`), sin servicios externos ni costo extra:
+
+- **Identidad verificada:** cada conexión se autentica con la sesión de Supabase. Las reacciones las firma el servidor con el id real de la jugadora: nadie puede hacerse pasar por el servidor ni por la rival.
+- **Canales privados:** solo las dos jugadoras de una partida pueden entrar a `match:<id>`. La sala `lobby` cuenta cuántas jugadoras hay en línea.
+- **A prueba de cortes:** si se cae el wifi, el cliente se reconecta solo y recibe el historial completo de la partida (sin repetir sonidos).
+- **Abandono justo:** si una jugadora se desconecta más de 30 s a mitad de partida, gana la que se quedó.
+- **Sin chat:** solo las 6 reacciones permitidas, con límite de frecuencia, validadas en el servidor.
+
+> Las partidas viven en memoria del servidor: mantén **una sola réplica** del servicio `herow-api` en Railway.
 - **Seguridad:** sin email de las chicas, verificación de edad en el servidor, moderación de OpenAI en todo texto, RLS sin acceso directo del navegador a la base.
 
 <br/>
@@ -796,10 +807,11 @@ MusuqLab/
 │       ├── data/               # Heroínas, portales, rutas de assets
 │       └── lib/api.js          # Cliente del backend
 ├── 🤖 server/                  # Node + Express
-│   ├── scripts/                # generate-portal-keys.js
+│   ├── scripts/                # e2e, e2e-live, seed-demo, check-ai
 │   └── src/
-│       ├── routes/             # /api/yessenia, /api/recommendations, /api/portal
-│       ├── services/           # IA (Gemini/OpenAI), moderación, scraping, tokens Portal
+│       ├── routes/             # /api/yessenia, /api/recommendations, /api/live
+│       ├── services/           # IA (Gemini/OpenAI), moderación, scraping, partidas en vivo
+│       ├── realtime/hub.js     # WebSocket HEROW Live (canales, presencia, reacciones)
 │       └── data/               # Prompt de YessenIA, fuentes de recomendaciones
 └── 🛠️ tools/process-assets.mjs  # Pixelado y limpieza de imágenes
 ```

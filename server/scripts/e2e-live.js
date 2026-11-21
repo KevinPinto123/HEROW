@@ -1,14 +1,13 @@
 // Prueba una partida EN VIVO real: 2 jugadoras temporales, emparejamiento,
-// canal de Portal, 5 rondas y puntos guardados. Requiere el backend en marcha.
+// canal de HEROW Live (WebSocket propio), 5 rondas y puntos guardados.
+// Requiere el backend en marcha.
 //   npm run test:live
-import { Portal } from '@portalsdk/core'
 import { createClient } from '@supabase/supabase-js'
 import dotenv from 'dotenv'
 
 dotenv.config({ quiet: true })
 const API = process.env.E2E_API ?? `http://localhost:${process.env.PORT ?? 3001}`
-const PK = process.env.PORTAL_PUBLISHABLE_KEY ?? (await import('node:fs')).readFileSync(new URL('../../frontend/.env.local', import.meta.url), 'utf8')
-  .split(/\r?\n/).find(l => l.startsWith('VITE_PORTAL_PUBLISHABLE_KEY='))?.split('=')[1]
+const WS_URL = API.replace(/^http/, 'ws') + '/live/ws'
 const admin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SECRET_KEY, { auth: { persistSession: false } })
 const wait = (ms) => new Promise(r => setTimeout(r, ms))
 
@@ -41,6 +40,27 @@ async function makePlayer(tag, heroineId, portalId) {
   return player
 }
 
+/** Conecta una jugadora al WebSocket y la mete a un canal. */
+function connect(token, ch) {
+  const ws = new WebSocket(WS_URL)
+  const conn = { ws, status: 'connecting', events: [], reactions: [], presence: 0, errors: [] }
+  ws.onopen = () => ws.send(JSON.stringify({ t: 'auth', token }))
+  ws.onmessage = (e) => {
+    const msg = JSON.parse(e.data)
+    if (msg.t === 'ready') ws.send(JSON.stringify({ t: 'join', ch }))
+    if (msg.t === 'joined' && msg.ch === ch) {
+      conn.status = 'ready'
+      for (const m of msg.history) if (!conn.events.some(x => x.id === m.id)) conn.events.push(m)
+    }
+    if (msg.t === 'msg' && msg.ch === ch) (msg.m.type === 'reaction' ? conn.reactions : conn.events).push(msg.m)
+    if (msg.t === 'presence' && msg.ch === ch) conn.presence = msg.count
+    if (msg.t === 'error') conn.errors.push(msg.code)
+  }
+  ws.onclose = () => { conn.status = 'closed' }
+  conn.send = (data) => ws.send(JSON.stringify(data))
+  return conn
+}
+
 const players = []
 try {
   const a = await makePlayer('a', 'hamilton', 'robotics')
@@ -56,23 +76,27 @@ try {
   const [ra, rb] = await Promise.all([qa, b.call('POST', '/api/live/queue', { portal: 'robotics' })])
   ok(ra.data?.matched && rb.data?.matched && ra.data.match.id === rb.data.match.id, 'Emparejadas en la misma partida')
   const match = ra.data.match
-  ok(match.players.length === 2 && ra.data.token && rb.data.token, 'Cada una recibe su token de Portal')
+  ok(match.players.length === 2 && match.channelId === `match:${match.id}`, 'La partida trae su canal en vivo')
 
   // Conexión al canal en vivo.
-  const events = { a: [], b: [] }
-  const handles = {}
-  for (const [key, res] of [['a', ra], ['b', rb]]) {
-    const portal = new Portal({ apiKey: PK, token: res.data.token })
-    const ch = portal.channel(match.channelId, { history: 50 })
-    ch.on('message', (m) => { if (m.sender.id === 'herow-server') events[key].push(m) })
-    ch.acquire()
-    handles[key] = ch
-  }
-  for (let i = 0; i < 40 && (handles.a.status !== 'ready' || handles.b.status !== 'ready'); i++) await wait(250)
-  ok(handles.a.status === 'ready' && handles.b.status === 'ready', 'Ambas conectadas al canal de Portal')
+  const conns = { a: connect(a.token, match.channelId), b: connect(b.token, match.channelId) }
+  for (let i = 0; i < 40 && (conns.a.status !== 'ready' || conns.b.status !== 'ready'); i++) await wait(250)
+  ok(conns.a.status === 'ready' && conns.b.status === 'ready', 'Ambas conectadas al canal de HEROW Live')
+  await wait(300)
+  ok(conns.a.presence === 2, 'Presencia: se ven las dos en la sala')
+  const events = { a: conns.a.events, b: conns.b.events }
+
+  // Seguridad: token falso rechazado, y una intrusa no entra a la partida.
+  const fake = connect('token-falso', match.channelId)
+  await wait(1500)
+  ok(fake.status !== 'ready' && fake.errors.includes('unauthorized'), 'Un token falso no puede conectarse')
+
+  // Reacciones: solo de la lista y las firma el servidor con el id real.
+  conns.a.send({ t: 'react', ch: match.channelId, emoji: '🔥' })
+  conns.a.send({ t: 'react', ch: match.channelId, emoji: 'hola' })
   await wait(500)
-  const pres = handles.a.presence
-  ok(pres?.kind === 'detailed' && pres.count === 2, 'Presencia: se ven las dos en la sala')
+  ok(conns.b.reactions.length === 1 && conns.b.reactions[0].sender.id === a.userId && conns.b.reactions[0].content.emoji === '🔥',
+    'Reacciones: llegan firmadas por el servidor y no se acepta texto libre')
 
   // 5 rondas: A responde bien y rápido; B responde mal.
   const seen = new Set()
@@ -95,6 +119,16 @@ try {
     for (let i = 0; i < 40 && !events.b.some(e => e.type === 'result' && e.content.n === n); i++) await wait(250)
     const result = events.b.find(e => e.type === 'result' && e.content.n === n)?.content
     ok(Boolean(result), `Ronda ${n}: ambas reciben el resultado`, result && `A=${result.players[a.userId].outcome} B=${result.players[b.userId].outcome}`)
+    if (n === 2) {
+      // B pierde la conexión y vuelve: recupera todo el historial.
+      conns.b.ws.close()
+      await wait(300)
+      const again = connect(b.token, match.channelId)
+      for (let i = 0; i < 20 && again.status !== 'ready'; i++) await wait(250)
+      ok(again.events.filter(e => e.type === 'result').length === 2, 'Reconexión: B recupera el historial de la partida')
+      conns.b = again
+      events.b = again.events
+    }
   }
   ok(seen.size === 5, 'Las 5 preguntas fueron distintas')
 
@@ -112,6 +146,14 @@ try {
   const liveRounds = await admin.from('rounds').select('mode').eq('user_id', a.userId)
   ok(liveRounds.data.every(r => r.mode === 'live'), 'Las rondas quedan marcadas como "en vivo"')
 
+  // Una jugadora ajena (C) no puede entrar al canal de una partida ajena.
+  const c = await makePlayer('c', 'hamilton', 'robotics')
+  players.push(c)
+  const spy = connect(c.token, match.channelId)
+  await wait(1500)
+  ok(spy.status !== 'ready' && spy.errors.includes('forbidden'), 'Una jugadora ajena no puede entrar a la partida')
+  spy.ws.close()
+
   // Abandono: nueva partida y B se va.
   const q2 = a.call('POST', '/api/live/queue', { portal: 'robotics' })
   await wait(500)
@@ -120,7 +162,7 @@ try {
   const snap2 = await a.call('GET', `/api/live/${r2a.data.match.id}`)
   ok(snap2.data.status === 'ended' && snap2.data.end.reason === 'left' && snap2.data.end.winner === a.userId, 'Si la rival abandona, gana la que se queda')
 
-  handles.a.release(); handles.b.release()
+  conns.a.ws.close(); conns.b.ws.close(); fake.ws.close()
 } catch (err) {
   failures++
   console.error('❌ Error inesperado:', err)

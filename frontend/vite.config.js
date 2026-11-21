@@ -8,6 +8,8 @@ export default defineConfig({
     // En desarrollo el backend corre en :3001 (npm run dev desde la raíz).
     proxy: {
       '/api': 'http://localhost:3001',
+      // Tiempo real (WebSocket de HEROW Live)
+      '/live': { target: 'ws://localhost:3001', ws: true },
     },
   },
 })

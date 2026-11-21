@@ -18,9 +18,6 @@ const schema = z.object({
   OPENAI_MODEL: z.string().default('gpt-5.4-mini'),
   OPENAI_MODERATION_MODEL: z.string().default('omni-moderation-latest'),
 
-  PORTAL_JWT_KID: z.string().default('herow-1'),
-  PORTAL_JWT_PRIVATE_KEY: optional,
-
   SCRAPE_CACHE_HOURS: z.coerce.number().positive().default(12),
 
   // Token para descargar los leads en CSV (GET /api/leads/export). Vacío = ruta apagada.
@@ -29,7 +26,6 @@ const schema = z.object({
   SUPABASE_URL: optional,
   SUPABASE_PUBLISHABLE_KEY: optional,
   SUPABASE_SECRET_KEY: optional,
-  PORTAL_SECRET_KEY: optional,
 
   // Atajos de prueba (sumar puntos). NUNCA activar en producción.
   DEV_TOOLS: z.enum(['true', 'false']).default('false'),
@@ -53,12 +49,6 @@ export const config = {
     gemini: { apiKey: env.GEMINI_API_KEY, model: env.GEMINI_MODEL },
     openai: { apiKey: env.OPENAI_API_KEY, model: env.OPENAI_MODEL, moderationModel: env.OPENAI_MODERATION_MODEL },
   },
-  portal: {
-    kid: env.PORTAL_JWT_KID,
-    // En .env la PEM va en una línea con \n literales.
-    privateKeyPem: env.PORTAL_JWT_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-    secretKey: env.PORTAL_SECRET_KEY,
-  },
   scrapeCacheMs: env.SCRAPE_CACHE_HOURS * 60 * 60 * 1000,
   leadsAdminToken: env.LEADS_ADMIN_TOKEN,
   devTools: env.DEV_TOOLS === 'true' && process.env.NODE_ENV !== 'production',
@@ -74,9 +64,9 @@ export const features = {
   gemini: Boolean(config.ai.gemini.apiKey),
   openai: Boolean(config.ai.openai.apiKey),
   moderation: Boolean(config.ai.openai.apiKey),
-  portalAuth: Boolean(config.portal.privateKeyPem),
-  portalSecret: Boolean(env.PORTAL_SECRET_KEY),
   supabase: Boolean(config.supabase.url && config.supabase.secretKey),
+  // Multijugador en vivo (WebSocket propio): solo necesita Supabase para las cuentas.
+  live: Boolean(config.supabase.url && config.supabase.secretKey),
   leadsExport: Boolean(config.leadsAdminToken),
   devTools: config.devTools,
 }

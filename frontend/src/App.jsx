@@ -3,7 +3,8 @@ import { Navigate, Route, BrowserRouter as Router, Routes, useLocation } from 'r
 import MuteButton from './components/MuteButton'
 import YessenIA from './components/YessenIA'
 import { PlayerProvider } from './lib/player'
-import { LivePortalProvider } from './lib/portal'
+import { LIVE_ENABLED } from './lib/live'
+import { useLiveConnection } from './lib/realtime'
 import { usePlayer } from './lib/usePlayer'
 import Landing from './views/Landing'
 
@@ -57,10 +58,17 @@ function GuestOnly({ children }) {
   return children
 }
 
+// Mantiene abierta la conexión en vivo mientras haya sesión.
+function LiveConnection({ children }) {
+  const { session } = usePlayer()
+  useLiveConnection(session?.user?.id, LIVE_ENABLED)
+  return children
+}
+
 export default function App() {
   return (
     <PlayerProvider>
-      <LivePortalProvider>
+      <LiveConnection>
       <Router>
         <div className="app">
           <Suspense fallback={<Loading />}>
@@ -88,7 +96,7 @@ export default function App() {
           <MuteButton />
         </div>
       </Router>
-      </LivePortalProvider>
+      </LiveConnection>
     </PlayerProvider>
   )
 }

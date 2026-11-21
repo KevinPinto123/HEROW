@@ -7,9 +7,8 @@ import { db } from '../services/supabase.js'
 const issuer = config.supabase.url ? `${config.supabase.url.replace(/\/$/, '')}/auth/v1` : null
 const jwks = issuer ? createRemoteJWKSet(new URL(`${issuer}/.well-known/jwks.json`), { cacheMaxAge: 10 * 60_000 }) : null
 
-async function userFromRequest(req) {
-  const header = req.get('authorization') ?? ''
-  const token = header.startsWith('Bearer ') ? header.slice(7) : null
+/** Verifica un access token de Supabase. Devuelve { id } o null. */
+export async function verifyAccessToken(token) {
   if (!token || !db) return null
   try {
     const { payload } = await jwtVerify(token, jwks, { issuer, audience: 'authenticated' })
@@ -22,6 +21,11 @@ async function userFromRequest(req) {
     }
     return null
   }
+}
+
+function userFromRequest(req) {
+  const header = req.get('authorization') ?? ''
+  return verifyAccessToken(header.startsWith('Bearer ') ? header.slice(7) : null)
 }
 
 /** Exige sesión válida de Supabase. Deja la usuaria en req.user ({ id }). */

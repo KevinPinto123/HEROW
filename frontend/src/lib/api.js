@@ -61,7 +61,7 @@ export const api = {
   opportunities: () => request('/api/opportunities'),
   setOpportunityStatus: (id, status) => post(`/api/opportunities/${id}/status`, { status }),
 
-  // Modo en vivo (Portal)
+  // Modo en vivo (HEROW Live)
   liveLobby: () => request('/api/live/lobby'),
   liveQueue: (portal, ticket) => post('/api/live/queue', { portal, ticket }),
   liveCancel: (ticket) => post('/api/live/cancel', { ticket }),
@@ -75,7 +75,4 @@ export const api = {
 
   /** messages: [{ role: 'user' | 'assistant', content }] → { reply, moderated? } */
   yesseniaChat: (messages) => post('/api/yessenia/chat', { messages }),
-
-  /** Token para Portal (multijugador). */
-  portalToken: () => post('/api/portal/token').then(r => r.token),
 }

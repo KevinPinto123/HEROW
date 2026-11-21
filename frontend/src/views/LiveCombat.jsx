@@ -1,4 +1,3 @@
-import { useChannel } from '@portalsdk/react'
 import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import SceneBg from '../components/SceneBg'
@@ -6,6 +5,7 @@ import { BACKGROUNDS } from '../data/assets'
 import { HEROINES, PORTALS, getHeroine } from '../data/heroines'
 import { api } from '../lib/api'
 import { LOBBY_CHANNEL, REACTIONS, SERVER_SENDER } from '../lib/live'
+import { useChannel } from '../lib/realtime'
 import { usePlayer } from '../lib/usePlayer'
 import { play } from '../lib/sfx'
 
@@ -21,7 +21,7 @@ const SEARCH_MAX_MS = 2 * 60_000
 
 // ───────── Buscando rival ─────────
 function Searching({ portal, onCancel, onPractice }) {
-  const { presence } = useChannel({ channelId: LOBBY_CHANNEL, history: 'none', metadata: { portal: portal.id } })
+  const { presence } = useChannel({ channelId: LOBBY_CHANNEL })
   const online = presence?.count ?? 1
   const [seconds, setSeconds] = useState(0)
   useEffect(() => {
@@ -58,21 +58,9 @@ function Match({ match, meId, onAgain, onExit }) {
 
   const { messages, send, status } = useChannel({
     channelId: match.channelId,
-    history: 50,
     onMessage: (m) => {
       if (m.sender.id === SERVER_SENDER) {
-        if (m.type === 'round') {
-          const rn = m.content.n
-          // Tiempo restante medido con el reloj del servidor (sin desfases entre relojes).
-          api.liveMatch(match.id)
-            .then(snap => {
-              if (snap.round?.n === rn && snap.round.elapsedMs !== null) {
-                setTimers(t => ({ ...t, [rn]: Math.max(0, snap.round.timeLimitMs - snap.round.elapsedMs) }))
-              }
-            })
-            .catch(() => {})
-          play('portal')
-        }
+        if (m.type === 'round') play('portal')
         if (m.type === 'answered' && m.content.userId !== meId) play('blip')
         if (m.type === 'result') {
           const mine = m.content.players?.[meId]
@@ -115,6 +103,23 @@ function Match({ match, meId, onAgain, onExit }) {
   const end = server.find(m => m.type === 'end')?.content ?? null
   const scores = server.filter(m => m.type === 'result').at(-1)?.content.scores ?? match.scores
   const myChoice = n ? myChoices[n] : undefined
+
+  // Tiempo restante medido con el reloj del servidor (sin desfases entre relojes).
+  // También funciona al reconectar a mitad de ronda.
+  const hasResult = Boolean(result)
+  const hasTimer = n ? timers[n] !== undefined : true
+  useEffect(() => {
+    if (!n || hasResult || hasTimer) return
+    let alive = true
+    api.liveMatch(match.id)
+      .then(snap => {
+        if (alive && snap.round?.n === n && snap.round.elapsedMs !== null) {
+          setTimers(t => ({ ...t, [n]: Math.max(0, snap.round.timeLimitMs - snap.round.elapsedMs) }))
+        }
+      })
+      .catch(() => {})
+    return () => { alive = false }
+  }, [n, hasResult, hasTimer, match.id])
 
   const choose = (i) => {
     if (!n || myChoice !== undefined || result || end) return
@@ -167,7 +172,7 @@ function Match({ match, meId, onAgain, onExit }) {
       <div className="live-scoreboard">
         <span className="hud-chip">Ronda {n ?? 0}/{match.rounds}</span>
         <span className="hud-chip live-score">TÚ {scores[meId] ?? 0} – {scores[rival.userId] ?? 0} {rival.username}</span>
-        <span className={`hud-chip live-status ${status}`}>{status === 'ready' ? '🟢 En vivo' : '🟡 Conectando…'}</span>
+        <span className={`hud-chip live-status ${status}`}>{status === 'ready' ? '🟢 En vivo' : '🟡 Reconectando…'}</span>
       </div>
 
       <div className="arena-stage">

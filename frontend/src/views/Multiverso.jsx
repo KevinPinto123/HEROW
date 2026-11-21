@@ -1,4 +1,3 @@
-import { useChannel } from '@portalsdk/react'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import GameNav from '../components/GameNav'
@@ -8,6 +7,7 @@ import { HEROINES, PORTALS, getHeroine, heroinesByPortal } from '../data/heroine
 import { usePlayer } from '../lib/usePlayer'
 import { api } from '../lib/api'
 import { LIVE_ENABLED, LOBBY_CHANNEL } from '../lib/live'
+import { useChannel } from '../lib/realtime'
 import { play } from '../lib/sfx'
 
 function OnlineCount() {

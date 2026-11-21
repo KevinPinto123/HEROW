@@ -10,7 +10,7 @@ import { missionsRouter } from './routes/missions.js'
 import { leadsRouter } from './routes/leads.js'
 import { opportunitiesRouter } from './routes/opportunities.js'
 import { liveRouter } from './routes/live.js'
-import { jwksRouter, portalRouter } from './routes/portal.js'
+import { attachRealtime, WS_PATH } from './realtime/hub.js'
 import { recommendationsRouter } from './routes/recommendations.js'
 import { yesseniaRouter } from './routes/yessenia.js'
 import { scheduleOpportunityAgent } from './services/opportunities.js'
@@ -20,11 +20,11 @@ import { db, must, usernameToEmail } from './services/supabase.js'
 const app = express()
 
 app.disable('x-powered-by')
+// Railway (y casi cualquier hosting) pone un proxy delante: confiar en 1 salto
+// para que el límite de peticiones use la IP real de cada jugadora.
+app.set('trust proxy', 1)
 app.use(express.json({ limit: '50kb' }))
 app.use(cors({ origin: config.corsOrigins }))
-
-// JWKS fuera de /api y sin límite: lo consulta Portal.
-app.use(jwksRouter)
 
 let dbReady = false
 app.get('/api/health', (_req, res) => {
@@ -38,7 +38,6 @@ app.use('/api/me', limit(60), requireUser, meRouter)
 app.use('/api/combat', limit(60), requireUser, combatRouter)
 app.use('/api/missions', limit(10), requireUser, missionsRouter)
 app.use('/api/opportunities', limit(60), requireUser, opportunitiesRouter)
-app.use('/api/portal', limit(30), requireUser, portalRouter)
 app.use('/api/live', limit(120), requireUser, liveRouter)
 app.use('/api/yessenia', limit(20), optionalUser, yesseniaRouter)
 app.use('/api/recommendations', limit(10), recommendationsRouter)
@@ -70,12 +69,12 @@ app.use((err, _req, res, _next) => {
   res.status(500).json({ error: 'internal_error' })
 })
 
-app.listen(config.port, async () => {
+const server = app.listen(config.port, async () => {
   const on = (f) => (f ? '✅' : '⚪')
   console.log(`🌀 HEROW API en http://localhost:${config.port}`)
   console.log(
     `   Gemini ${on(features.gemini)}  OpenAI ${on(features.openai)}  Moderación ${on(features.moderation)}  ` +
-      `Portal ${on(features.portalSecret || features.portalAuth)}  Supabase ${on(features.supabase)}`,
+      `En vivo ${on(features.live)} (ws ${WS_PATH})  Supabase ${on(features.supabase)}`,
   )
 
   if (!db) return
@@ -89,3 +88,6 @@ app.listen(config.port, async () => {
     console.error('      Ejecuta supabase/schema.sql en Supabase → SQL Editor.')
   }
 })
+
+// Tiempo real (HEROW Live) en el mismo puerto: Railway acepta WebSocket sin configurar nada.
+attachRealtime(server)

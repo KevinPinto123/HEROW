@@ -3,13 +3,12 @@ import { z } from 'zod'
 import { features } from '../config.js'
 import { PORTAL_IDS } from '../data/game.js'
 import { cancelQueue, getMatchFor, joinQueue, leaveMatch, snapshot, submitAnswer, waitingByPortal } from '../services/live.js'
-import { signPlayerToken } from '../services/portal-auth.js'
 import { db, must } from '../services/supabase.js'
 
 export const liveRouter = Router()
 
 liveRouter.use((_req, res, next) => {
-  if (!features.portalSecret) return res.status(503).json({ error: 'live_unavailable', message: 'El modo en vivo no está configurado.' })
+  if (!features.live) return res.status(503).json({ error: 'live_unavailable', message: 'El modo en vivo no está configurado.' })
   next()
 })
 
@@ -37,8 +36,7 @@ liveRouter.post('/queue', async (req, res) => {
   if (closed) return
   if (!result.matched) return res.json(result)
   const match = getMatchFor(result.matchId, req.user.id)
-  const token = await signPlayerToken({ playerId: req.user.id, name: profile.username })
-  res.json({ matched: true, match: snapshot(match), token })
+  res.json({ matched: true, match: snapshot(match) })
 })
 
 const cancelBody = z.object({ ticket: z.uuid().optional() })
