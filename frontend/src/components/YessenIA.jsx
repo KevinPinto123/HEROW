@@ -11,6 +11,8 @@ const YESSENIA_RESPONSES = {
   heroines: 'Las heroínas son mujeres reales: Marie Curie, Ada Lovelace, María Reiche, Aracely Quispe y más. Elige a la tuya en El Despertar.',
   nopuedo: 'El NoPuedo es ese monstruo que te dice "no puedes". Pero juntas lo vamos a derrotar. Pedir ayuda es la estrategia más poderosa. 💪',
   safety: 'Tu seguridad es lo primero. No hay chats abiertos ni contacto directo entre jugadoras. 🔐',
+  mentoras: 'En Conecta 🤝 conoces mentoras reales: ingenieras, científicas y diseñadoras verificadas por el equipo. Puedes preguntarles de forma anónima y apuntarte a sus charlas y talleres grupales. ¡Nadie te pide tus datos!',
+  offline: '¿Sin señal? 📡 Entra a "Sin internet": practicas igual y tus puntos se suman solos cuando vuelva la conexión. Tu docente también puede imprimir el Kit HEROW para jugar en el aula.',
   default: 'Mmm, interesante pregunta. ¿Quieres saber de los portales, las heroínas, el NoPuedo o cómo funciona tu seguridad?',
 }
 
@@ -21,11 +23,13 @@ function scriptedReply(message) {
   if (lower.includes('portal') || lower.includes('stem') || lower.includes('universo')) return YESSENIA_RESPONSES.portals
   if (lower.includes('heroína') || lower.includes('heroina') || lower.includes('mujer')) return YESSENIA_RESPONSES.heroines
   if (lower.includes('nopuedo') || lower.includes('no puedo') || lower.includes('miedo') || lower.includes('monstruo')) return YESSENIA_RESPONSES.nopuedo
+  if (/mentor|profesional|charla|evento|taller/.test(lower)) return YESSENIA_RESPONSES.mentoras
+  if (/internet|señal|senal|offline|conexi[oó]n|datos m[oó]viles/.test(lower)) return YESSENIA_RESPONSES.offline
   if (lower.includes('segur') || lower.includes('padres') || lower.includes('menor')) return YESSENIA_RESPONSES.safety
   return YESSENIA_RESPONSES.default
 }
 
-const SUGGESTIONS = ['¿Qué son los portales?', '¿Quiénes son las heroínas?', '¿Qué es el NoPuedo?', '¿Es seguro?']
+const SUGGESTIONS = ['¿Qué son los portales?', '¿Cómo conozco mentoras?', '¿Qué es el NoPuedo?', '¿Y si no tengo internet?', '¿Es seguro?']
 
 export default function YessenIA() {
   const [isOpen, setIsOpen] = useState(false)

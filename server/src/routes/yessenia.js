@@ -4,6 +4,7 @@ import { features } from '../config.js'
 import { HEROINES } from '../data/game.js'
 import { YESSENIA_SYSTEM_PROMPT } from '../data/yessenia-prompt.js'
 import { aiAvailable, generate } from '../services/ai.js'
+import { approvedMentors, upcomingEvents } from '../services/conecta.js'
 import { moderate } from '../services/moderation.js'
 import { recommendationsFor } from '../services/opportunities.js'
 import { getPlayerState } from '../services/progress.js'
@@ -13,6 +14,7 @@ async function playerContext(userId) {
   const state = await getPlayerState(userId, { unlock: false })
   if (!state.profile) return ''
   const recs = await recommendationsFor(userId, state)
+  const network = await networkContext(state.profile.portalId).catch(() => [])
   const p = state.profile
   const skills = state.skills
     .filter(s => s.answered)
@@ -28,8 +30,25 @@ async function playerContext(userId) {
     state.next ? `Para el nivel ${state.next.targetLevel} necesita ${state.next.pointsNeeded} puntos y la misión "${state.next.mission.title}".` : 'Está en el nivel máximo.',
     'OPORTUNIDADES VERIFICADAS QUE PUEDES RECOMENDAR (con su enlace):',
     ...(opps.length ? opps : ['- Ninguna todavía']),
+    ...network,
   ]
   return lines.join('\n')
+}
+
+/** Mentoras y próximos eventos de HEROW Conecta (si la red está activa). */
+async function networkContext(portalId) {
+  const [mentors, events] = await Promise.all([approvedMentors(), upcomingEvents(20)])
+  const mine = (list) => list.filter(x => !x.portals?.length || x.portals.includes(portalId))
+  const evs = mine(events).slice(0, 3).map(e =>
+    `- ${e.title} (${e.kind}, ${e.modality}${e.region ? ', ' + e.region : ''}) el ${new Date(e.starts_at).toLocaleString('es-PE', { timeZone: 'America/Lima', dateStyle: 'medium', timeStyle: 'short' })}`)
+  const ms = mine(mentors).slice(0, 4).map(m => `- ${m.name}, ${m.role}${m.org ? ' en ' + m.org : ''}`)
+  return [
+    'RED DE MENTORAS HEROW CONECTA (sección Conecta del juego; invítala a ir ahí):',
+    `Mentoras verificadas: ${mentors.length}.`,
+    ...(ms.length ? ms : ['- Aún no hay mentoras de su portal']),
+    'PRÓXIMOS EVENTOS GRUPALES:',
+    ...(evs.length ? evs : ['- Ninguno publicado todavía']),
+  ]
 }
 
 export const yesseniaRouter = Router()

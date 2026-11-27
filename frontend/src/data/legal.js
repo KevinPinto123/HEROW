@@ -55,6 +55,27 @@ export const PRIVACIDAD = {
       ],
     },
     {
+      titulo: 'Qué pedimos a las mentoras',
+      parrafos: [
+        'Las mentoras de HEROW Conecta son personas adultas que postulan en /mentoras. Guardamos su nombre, correo, profesión, organización, región, LinkedIn y los textos que escriben (historia, consejo y power-up), además de la fecha en que aceptaron esta política.',
+        'A las jugadoras solo les mostramos nombre, profesión, organización, región y esos textos. El **correo y el LinkedIn nunca se muestran**: sirven para que el equipo verifique a cada mentora antes de aprobarla.',
+      ],
+    },
+    {
+      titulo: 'Preguntas a mentoras y eventos',
+      lista: [
+        'Las preguntas que una jugadora envía a las mentoras son **anónimas**: la mentora ve solo el nivel y el portal, nunca el usuario.',
+        'Si una jugadora se apunta a un evento, la mentora solo ve **cuántas** se apuntaron, nunca quiénes.',
+        'La región que eliges para filtrar eventos se guarda **solo en tu dispositivo**: no la enviamos al servidor.',
+      ],
+    },
+    {
+      titulo: 'Uso sin internet',
+      parrafos: [
+        'Para que HEROW funcione sin señal, guardamos en tu dispositivo el juego, una copia de tu progreso, el banco de preguntas de práctica y lo que hiciste sin conexión hasta poder enviarlo. Cada cuenta tiene su propio espacio, para que en una computadora compartida no se mezcle nada. Puedes borrarlo limpiando los datos del sitio en tu navegador.',
+      ],
+    },
+    {
       titulo: 'Para qué usamos todo esto',
       lista: [
         'Que puedas entrar a tu cuenta y no perder tu progreso.',
@@ -73,6 +94,7 @@ export const PRIVACIDAD = {
         '**Google (Gemini) y OpenAI** — generan y moderan las respuestas de YessenIA. Los mensajes se envían para obtener una respuesta, no para entrenar modelos.',
         '**Portal** — hace posible el combate en vivo entre dos jugadoras.',
         '**Vercel y Railway** — alojan la web y el servidor.',
+        '**Microsoft Clarity** — solo si aceptas el aviso de medición: registra de forma anónima qué pantallas se usan y dónde se hace clic, para mejorar el juego. No le enviamos tu usuario ni lo que escribes (esos textos se ocultan en la medición). Puedes cambiar tu decisión en "Preferencias de medición", al pie de la página.',
       ],
       cierre: [
         'Algunos de estos servicios tienen infraestructura fuera del país, por lo que puede haber transferencia internacional de datos.',
@@ -133,6 +155,7 @@ export const TERMINOS = {
         'No uses tu nombre completo ni datos personales como nombre de usuaria.',
         'No compartas tu contraseña con nadie.',
         'No intentes contactar a otras jugadoras fuera del juego.',
+        'En las preguntas a mentoras no compartas ni pidas teléfonos, correos o redes sociales: todo se conversa dentro de HEROW.',
         'No escribas contenido ofensivo, violento o sexual. El sistema lo bloquea y la cuenta puede ser suspendida.',
         'No intentes romper, copiar ni sobrecargar el servicio.',
       ],
@@ -197,6 +220,19 @@ export const SEGURIDAD = {
       titulo: 'El combate en vivo no permite hablar',
       parrafos: [
         'Dos jugadoras pueden competir respondiendo las mismas preguntas al mismo tiempo. Lo único que viaja entre ellas es qué alternativa eligieron y cuánto demoraron. No hay texto libre, ni voz, ni imágenes.',
+      ],
+    },
+    {
+      titulo: 'La red de mentoras no tiene chat privado',
+      parrafos: [
+        'HEROW Conecta acerca a las chicas a mujeres profesionales en ciencia y tecnología, con reglas estrictas:',
+      ],
+      lista: [
+        'Cada mentora es una **persona adulta verificada por el equipo** antes de aparecer, y acepta un código de cuidado.',
+        'Las jugadoras preguntan de forma **anónima** y la respuesta se publica para todas. No existe un canal privado entre una mentora y una jugadora.',
+        'Todo texto (preguntas, respuestas, eventos) pasa por **moderación automática** y por un filtro que bloquea teléfonos, correos, redes sociales y enlaces. Si la moderación no está disponible, el equipo lo revisa a mano antes de publicarlo.',
+        'Los eventos son **grupales y abiertos** (charlas, talleres, visitas). La mentora ve cuántas chicas se apuntaron, nunca quiénes. El juego recuerda avisar a la familia antes de ir.',
+        'El equipo puede ocultar cualquier contenido y pausar a cualquier mentora en cualquier momento.',
       ],
     },
     {

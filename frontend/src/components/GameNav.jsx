@@ -19,7 +19,7 @@ export default function GameNav() {
       <div className="game-nav-player">
         {hero && <img src={hero.sprite} alt="" className="pixel-img" />}
         <div>
-          <div className="game-nav-name">{p.username}</div>
+          <div className="game-nav-name" data-clarity-mask="true">{p.username}</div>
           <div className="game-nav-meta">
             Nivel {p.level} · {p.levelName} · 🏆 {p.points}
             {next ? ` / ${next.pointsNeeded}` : ''}
@@ -30,7 +30,9 @@ export default function GameNav() {
         <NavLink to="/dashboard" className={link} onClick={() => play('blip')}>🏠 Inicio</NavLink>
         <NavLink to="/multiverso" className={link} onClick={() => play('blip')}>⚔️ Jugar</NavLink>
         <NavLink to="/mision" className={link} onClick={() => play('blip')}>🎯 Misión</NavLink>
+        <NavLink to="/conecta" className={link} onClick={() => play('blip')}>🤝 Mentoras</NavLink>
         <NavLink to="/niveles" className={link} onClick={() => play('blip')}>🗺️ Mapa</NavLink>
+        <NavLink to="/practica" className={link} onClick={() => play('blip')}>📡 Sin internet</NavLink>
         <NavLink to="/arcade" className={link} onClick={() => play('blip')}>🕹️ Arcade</NavLink>
         <button className="pixel-btn ghost small" onClick={async () => { await logout(); navigate('/') }}>Salir</button>
       </div>

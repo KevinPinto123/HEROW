@@ -22,6 +22,8 @@ const schema = z.object({
 
   // Token para descargar los leads en CSV (GET /api/leads/export). Vacío = ruta apagada.
   LEADS_ADMIN_TOKEN: optional,
+  // Token del panel del equipo (aprobar mentoras, eventos y respuestas). Vacío = usa LEADS_ADMIN_TOKEN.
+  ADMIN_TOKEN: optional,
 
   SUPABASE_URL: optional,
   SUPABASE_PUBLISHABLE_KEY: optional,
@@ -51,6 +53,7 @@ export const config = {
   },
   scrapeCacheMs: env.SCRAPE_CACHE_HOURS * 60 * 60 * 1000,
   leadsAdminToken: env.LEADS_ADMIN_TOKEN,
+  adminToken: env.ADMIN_TOKEN ?? env.LEADS_ADMIN_TOKEN,
   devTools: env.DEV_TOOLS === 'true' && process.env.NODE_ENV !== 'production',
   supabase: {
     url: env.SUPABASE_URL,
@@ -68,5 +71,6 @@ export const features = {
   // Multijugador en vivo (WebSocket propio): solo necesita Supabase para las cuentas.
   live: Boolean(config.supabase.url && config.supabase.secretKey),
   leadsExport: Boolean(config.leadsAdminToken),
+  adminPanel: Boolean(config.adminToken),
   devTools: config.devTools,
 }

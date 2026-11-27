@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { ANIO, CONTACTO, HAY_REDES, enlaceInstagram } from '../data/contacto'
+import { analyticsAvailable, resetConsent } from '../lib/analytics'
 import { play } from '../lib/sfx'
 
 // Un enlace del footer. Si es interno usa Link; si es externo abre en otra pestaña.
@@ -37,6 +38,7 @@ export default function Footer() {
               <li><Enlace a="/#como-funciona">Cómo funciona</Enlace></li>
               <li><Enlace a="/#heroinas">Heroínas</Enlace></li>
               <li><Enlace a="/registro">Crear cuenta</Enlace></li>
+              <li><Enlace a="/practica">Jugar sin internet</Enlace></li>
               <li><Enlace a="/entrar">Entrar</Enlace></li>
             </ul>
           </nav>
@@ -46,7 +48,8 @@ export default function Footer() {
             <ul>
               <li><Enlace a="/#sumate">Colegios</Enlace></li>
               <li><Enlace a="/#sumate">Empresas y becas</Enlace></li>
-              <li><Enlace a="/#sumate">Ser mentora</Enlace></li>
+              <li><Enlace a="/mentoras">Ser mentora</Enlace></li>
+              <li><Enlace a="/kit">Kit para docentes sin internet</Enlace></li>
               {CONTACTO.email && (
                 <li><a href={`mailto:${CONTACTO.email}`}>Escríbenos</a></li>
               )}
@@ -59,6 +62,9 @@ export default function Footer() {
               <li><Enlace a="/privacidad">Política de privacidad</Enlace></li>
               <li><Enlace a="/terminos">Términos de uso</Enlace></li>
               <li><Enlace a="/seguridad">Seguridad para menores</Enlace></li>
+              {analyticsAvailable && (
+                <li><button type="button" className="footer-consent" onClick={() => { play('blip'); resetConsent() }}>Preferencias de medición</button></li>
+              )}
               <li><Enlace a="/#sumate">Para apoderados</Enlace></li>
             </ul>
           </nav>

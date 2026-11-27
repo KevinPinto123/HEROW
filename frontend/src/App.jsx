@@ -1,8 +1,11 @@
 import { Suspense, lazy } from 'react'
-import { Navigate, Route, BrowserRouter as Router, Routes, useLocation } from 'react-router-dom'
+import { Link, Navigate, Route, BrowserRouter as Router, Routes, useLocation } from 'react-router-dom'
+import ConsentBanner from './components/ConsentBanner'
 import MuteButton from './components/MuteButton'
+import NetStatus from './components/NetStatus'
 import YessenIA from './components/YessenIA'
 import { PlayerProvider } from './lib/player'
+import { isNetworkError } from './lib/api'
 import { LIVE_ENABLED } from './lib/live'
 import { useLiveConnection } from './lib/realtime'
 import { usePlayer } from './lib/usePlayer'
@@ -14,13 +17,19 @@ const ArcadeGame = lazy(() => import('./views/ArcadeGame'))
 const Awakening = lazy(() => import('./views/Awakening'))
 const Boss = lazy(() => import('./views/Boss'))
 const Combat = lazy(() => import('./views/Combat'))
+const Conecta = lazy(() => import('./views/Conecta'))
+const Kit = lazy(() => import('./views/Kit'))
 const Legal = lazy(() => import('./views/Legal'))
 const Dashboard = lazy(() => import('./views/Dashboard'))
 const LiveCombat = lazy(() => import('./views/LiveCombat'))
 const Login = lazy(() => import('./views/Login'))
+const MentoraPanel = lazy(() => import('./views/MentoraPanel'))
+const Mentoras = lazy(() => import('./views/Mentoras'))
+const MentorasAdmin = lazy(() => import('./views/MentorasAdmin'))
 const Mission = lazy(() => import('./views/Mission'))
 const Multiverso = lazy(() => import('./views/Multiverso'))
 const Niveles = lazy(() => import('./views/Niveles'))
+const Practica = lazy(() => import('./views/Practica'))
 const Register = lazy(() => import('./views/Register'))
 
 function Loading() {
@@ -43,7 +52,11 @@ function Protected({ children, needsHeroine = true }) {
         <div className="pixel-panel" style={{ maxWidth: 520 }}>
           <h2 className="pixel-title" style={{ fontSize: '0.8rem', marginBottom: 12 }}>No pudimos cargar tu progreso</h2>
           <p>{error.message}</p>
-          <button className="pixel-btn gold" style={{ marginTop: 16 }} onClick={() => window.location.reload()}>Reintentar</button>
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 16 }}>
+            <button className="pixel-btn gold" onClick={() => window.location.reload()}>Reintentar</button>
+            {isNetworkError(error) && <Link className="pixel-btn cyan" to="/practica">📡 Practicar sin internet</Link>}
+            {isNetworkError(error) && <Link className="pixel-btn ghost" to="/arcade">🕹️ Arcade</Link>}
+          </div>
         </div>
       </div>
     )
@@ -89,6 +102,14 @@ export default function App() {
             <Route path="/vivo" element={<Protected><LiveCombat /></Protected>} />
             <Route path="/mision" element={<Protected><Mission /></Protected>} />
             <Route path="/boss" element={<Protected><Boss /></Protected>} />
+            {/* HEROW Conecta: red de mentoras */}
+            <Route path="/conecta" element={<Protected><Conecta /></Protected>} />
+            <Route path="/mentoras" element={<Mentoras />} />
+            <Route path="/mentoras/panel" element={<MentoraPanel />} />
+            <Route path="/mentoras/admin" element={<MentorasAdmin />} />
+            {/* Sin internet: práctica (con o sin cuenta) y kit imprimible para colegios */}
+            <Route path="/practica" element={<Practica />} />
+            <Route path="/kit" element={<Kit />} />
             {/* Páginas legales: públicas, sin sesión. */}
             <Route path="/privacidad" element={<Legal doc="privacidad" />} />
             <Route path="/terminos" element={<Legal doc="terminos" />} />
@@ -99,6 +120,8 @@ export default function App() {
           </Suspense>
           <YessenIA />
           <MuteButton />
+          <NetStatus />
+          <ConsentBanner />
         </div>
       </Router>
       </LiveConnection>

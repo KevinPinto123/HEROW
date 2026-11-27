@@ -86,7 +86,7 @@ export async function getPlayerState(userId, { unlock = true } = {}) {
     db.from('profiles').select('*').eq('id', userId).maybeSingle().then(must),
     db.from('skill_stats').select('*').eq('user_id', userId).then(must),
     db.from('unlocked_heroines').select('heroine_id, unlocked_at').eq('user_id', userId).then(must),
-    db.from('rounds').select('portal_id, outcome, points, correct, rival_heroine, created_at')
+    db.from('rounds').select('portal_id, outcome, points, correct, rival_heroine, mode, created_at')
       .eq('user_id', userId).order('created_at', { ascending: false }).limit(8).then(must),
     db.from('saved_opportunities').select('opportunity_id', { count: 'exact', head: true })
       .eq('user_id', userId).eq('status', 'applied'),

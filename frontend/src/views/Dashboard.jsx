@@ -4,8 +4,11 @@ import GameNav from '../components/GameNav'
 import PixelDialog from '../components/PixelDialog'
 import SceneBg from '../components/SceneBg'
 import { BACKGROUNDS, SPRITES } from '../data/assets'
+import { KIND_LABEL, MODALITY_LABEL, formatEventDate } from '../data/conecta'
 import { PORTALS, getHeroine } from '../data/heroines'
-import { api } from '../lib/api'
+import { api, isNetworkError } from '../lib/api'
+import { loadSnapshot, pendingCount, saveSnapshot, since, useOnline, useQueueVersion } from '../lib/offline'
+import { usePwa } from '../lib/pwa'
 import { usePlayer } from '../lib/usePlayer'
 import { play } from '../lib/sfx'
 
@@ -229,7 +232,7 @@ function RecentPanel({ recent }) {
           {recent.map((r, i) => (
             <li key={i}>
               <span style={{ color: OUTCOME[r.outcome].color }}>{OUTCOME[r.outcome].label} +{r.points}</span>
-              <span>{PORTALS[r.portal_id]?.emoji} vs {getHeroine(r.rival_heroine)?.name ?? 'rival'}</span>
+              <span>{PORTALS[r.portal_id]?.emoji} {r.mode === 'offline' ? 'práctica sin internet' : `vs ${getHeroine(r.rival_heroine)?.name ?? 'rival'}`}</span>
               <small>{timeAgo(r.created_at)}</small>
             </li>
           ))}
@@ -241,10 +244,96 @@ function RecentPanel({ recent }) {
   )
 }
 
+// ───────── Red de mentoras ─────────
+function ConectaPanel({ userId }) {
+  const navigate = useNavigate()
+  const [info, setInfo] = useState(() => loadSnapshot(userId, 'conecta')?.data ?? null)
+
+  useEffect(() => {
+    let alive = true
+    api.conecta()
+      .then(d => { if (alive) { setInfo(d); saveSnapshot(userId, 'conecta', d) } })
+      .catch(() => {}) // sin red o red aún no activa: se queda lo guardado o la invitación
+    return () => { alive = false }
+  }, [userId])
+
+  const mine = new Set(info?.portals ?? [])
+  const events = (info?.events ?? []).filter(e => e.mine || !e.portals.length || e.portals.some(p => mine.has(p))).slice(0, 2)
+  const answer = info?.answers?.[0]
+  const go = () => { play('confirm'); navigate('/conecta') }
+
+  return (
+    <section className="pixel-panel dash-conecta">
+      <div className="dash-level-head">
+        <h2 className="dash-h">🤝 Tu red de mentoras</h2>
+        {info && <span className="pixel-tag">{info.stats.mentors} mentoras · {info.stats.upcoming} eventos</span>}
+      </div>
+      <p className="dash-muted">Mujeres reales que hoy trabajan en lo que tú exploras. Pregúntales sin miedo (es anónimo) y apúntate a sus charlas.</p>
+      {events.length > 0 && (
+        <ul className="dash-events">
+          {events.map(e => (
+            <li key={e.id}>
+              <span className="dash-event-date">{formatEventDate(e.startsAt)}</span>
+              <span><strong>{KIND_LABEL[e.kind]?.emoji} {e.title}</strong><small>{e.mentor?.name} · {MODALITY_LABEL[e.modality]}{e.mine ? ' · 💜 vas' : ''}</small></span>
+            </li>
+          ))}
+        </ul>
+      )}
+      {answer?.answer && (
+        <div className="conecta-a">
+          <small>Última respuesta de {answer.answeredBy?.name ?? 'una mentora'}</small>
+          <p>“{answer.question}” — {answer.answer.length > 140 ? `${answer.answer.slice(0, 140)}…` : answer.answer}</p>
+        </div>
+      )}
+      {info && info.mentors?.length > 0 && !info.mentors.some(m => m.following) && (
+        <p className="following-empty">💡 Sigue a tu primera mentora: verás primero sus charlas y respuestas.</p>
+      )}
+      <div className="dash-quick">
+        <button className="pixel-btn gold" onClick={go}>🤝 Conocer mentoras</button>
+        <button className="pixel-btn ghost" onClick={go}>💬 Hacer una pregunta</button>
+      </div>
+    </section>
+  )
+}
+
+// ───────── Sin internet ─────────
+function OfflinePanel({ userId }) {
+  const navigate = useNavigate()
+  const online = useOnline()
+  useQueueVersion()
+  const { canInstall, install, offlineReady } = usePwa()
+  const pending = pendingCount(userId)
+  return (
+    <section className="pixel-panel dash-offline">
+      <h2 className="dash-h">📡 HEROW sin internet</h2>
+      <p className="dash-muted">¿La señal va y viene? Practica sin conexión y tus puntos se suman solos cuando vuelva el internet.</p>
+      <ul className="dash-checklist">
+        <li className={offlineReady ? 'done' : ''}>
+          <span className="check">{offlineReady ? '✔' : '·'}</span>
+          <span><strong>App guardada en este dispositivo</strong><small>{offlineReady ? 'Ya abre sin señal' : 'Se guarda sola al navegar con señal'}</small></span>
+        </li>
+        <li className={pending ? '' : 'done'}>
+          <span className="check">{pending ? '⏳' : '✔'}</span>
+          <span><strong>{pending ? `${pending} por sincronizar` : 'Todo sincronizado'}</strong><small>{online ? 'Con señal' : 'Sin señal: se enviará después'}</small></span>
+        </li>
+      </ul>
+      <div className="dash-quick">
+        <button className="pixel-btn cyan" onClick={() => { play('confirm'); navigate('/practica') }}>📡 Practicar sin internet</button>
+        {canInstall && <button className="pixel-btn gold" onClick={() => { play('confirm'); install() }}>📲 Instalar HEROW</button>}
+      </div>
+      <p className="form-note dash-kit-note">
+        ¿Tu colegio no tiene internet? Tu docente puede imprimir el{' '}
+        <a className="legal-link" href="/kit" onClick={e => { e.preventDefault(); navigate('/kit') }}>Kit HEROW sin internet</a>.
+      </p>
+    </section>
+  )
+}
+
 export default function Dashboard() {
   const navigate = useNavigate()
-  const { setState } = usePlayer()
+  const { setState, userId } = usePlayer()
   const [data, setData] = useState(null)
+  const [cachedAt, setCachedAt] = useState(null) // sin internet: hora de la copia guardada
   const [error, setError] = useState('')
   const [busyId, setBusyId] = useState(null)
   const [toast, setToast] = useState(null)
@@ -252,25 +341,38 @@ export default function Dashboard() {
   const apply = useCallback((d) => {
     setData(d)
     setState(d)
+    setCachedAt(null)
+    saveSnapshot(userId, 'dashboard', d)
     if (d.newlyUnlocked?.length) setToast(d.newlyUnlocked)
     // La guía personalizada con IA llega después, sin bloquear la pantalla.
     if (d.guidePending) {
       api.guide().then(g => setData(cur => (cur ? { ...cur, guide: g.guide, guidePending: false } : cur))).catch(() => {})
     }
-  }, [setState])
+  }, [setState, userId])
+
+  // Sin internet: abrimos la última copia guardada en vez de mostrar un error.
+  const fallback = useCallback((err) => {
+    const snap = isNetworkError(err) ? loadSnapshot(userId, 'dashboard') : null
+    if (snap) {
+      setData({ ...snap.data, guidePending: false, newlyUnlocked: [] })
+      setCachedAt(snap.savedAt)
+    } else {
+      setError(err.message)
+    }
+  }, [userId])
 
   const load = () => {
     setError('')
-    api.dashboard().then(apply).catch(err => setError(err.message))
+    api.dashboard().then(apply).catch(fallback)
   }
 
   useEffect(() => {
     let cancelled = false
     api.dashboard()
       .then(d => !cancelled && apply(d))
-      .catch(err => !cancelled && setError(err.message))
+      .catch(err => !cancelled && fallback(err))
     return () => { cancelled = true }
-  }, [apply])
+  }, [apply, fallback])
 
   const onStatus = async (o, status) => {
     play(status === 'applied' ? 'win' : 'select')
@@ -331,6 +433,13 @@ export default function Dashboard() {
           </div>
         )}
         {error && <p className="form-error" role="alert" onClick={() => setError('')}>{error}</p>}
+        {cachedAt && (
+          <p className="conecta-offline" role="status">
+            📡 Sin internet: ves tu base como estaba {since(cachedAt)}. Puedes{' '}
+            <a className="legal-link" href="/practica" onClick={e => { e.preventDefault(); navigate('/practica') }}>practicar sin internet</a>{' '}
+            y todo se sincroniza al volver la señal.
+          </p>
+        )}
 
         <div className="dash-top">
           <section className="dash-guide" style={{ '--aura': portal.color }}>
@@ -338,7 +447,7 @@ export default function Dashboard() {
               <img src={hero.sprite} alt={hero.name} className="pixel-img" />
               <img src={SPRITES.yessenia} alt="" className="pixel-img dash-guide-orb" />
             </div>
-            <div className="dash-guide-talk">
+            <div className="dash-guide-talk" data-clarity-mask="true">
               <PixelDialog text={data.guide} speaker={`YessenIA · con ${hero.name}`} />
               <div className="dash-quick">
                 <button className="pixel-btn gold" onClick={() => { play('confirm'); navigate('/multiverso') }}>⚔️ Jugar</button>
@@ -347,6 +456,11 @@ export default function Dashboard() {
             </div>
           </section>
           <LevelPanel state={data} />
+        </div>
+
+        <div className="dash-bottom dash-network">
+          <ConectaPanel userId={userId} />
+          <OfflinePanel userId={userId} />
         </div>
 
         <OpportunitiesPanel opportunities={data.opportunities} onStatus={onStatus} busyId={busyId} />

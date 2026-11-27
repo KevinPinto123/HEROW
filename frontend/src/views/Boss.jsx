@@ -4,6 +4,7 @@ import PixelDialog from '../components/PixelDialog'
 import SceneBg from '../components/SceneBg'
 import { BACKGROUNDS, SPRITES } from '../data/assets'
 import { HEROINES, PORTALS, getHeroine, heroinesByPortal } from '../data/heroines'
+import { EVENTS, track } from '../lib/analytics'
 import { api } from '../lib/api'
 import { usePlayer } from '../lib/usePlayer'
 import { play } from '../lib/sfx'
@@ -32,9 +33,19 @@ export default function Boss() {
   const [rewards, setRewards] = useState(null)
   const [error, setError] = useState('')
 
+  const [powerup, setPowerup] = useState(null) // ánimo de una mentora real (HEROW Conecta)
+
   const ready = state.next?.ready
 
   useEffect(() => { if (ready) play('boss') }, [ready])
+
+  // Se pide al aparecer el jefe: si no hay red o mentoras, la pelea sigue igual.
+  useEffect(() => {
+    if (!ready) return
+    let alive = true
+    api.conectaPowerup().then(r => alive && setPowerup(r.powerup)).catch(() => {})
+    return () => { alive = false }
+  }, [ready])
 
   const strike = (floor = 0, amount = 34) => {
     play('hit')
@@ -55,6 +66,7 @@ export default function Boss() {
         const { state: after } = await api.advanceLevel()
         setState(after)
         setLevelUp({ before, after })
+        track(EVENTS.nivelSubido, { nivel: after.profile.level })
         setStep('victory')
         api.opportunities().then(o => setRewards(o.recommended.slice(0, 3))).catch(() => setRewards([]))
       } catch (err) {
@@ -134,6 +146,7 @@ export default function Boss() {
           </div>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', marginTop: 24 }}>
             <button className="pixel-btn gold" onClick={() => navigate('/dashboard')}>🏠 Ir a mi dashboard</button>
+            <button className="pixel-btn cyan" onClick={() => navigate('/conecta')}>🤝 Conocer mentoras de mi portal</button>
             <button className="pixel-btn ghost" onClick={() => navigate('/multiverso')}>⚔️ Seguir jugando</button>
           </div>
         </div>
@@ -170,13 +183,25 @@ export default function Boss() {
           {step === 'appear' && (
             <PixelDialog text={'Completaste tu misión en el mundo real. El NoPuedo intenta convencerte de que no sirvió de nada…\n¡Llama a tus heroínas y demuéstrale lo contrario!'}>
               <button className="pixel-btn ghost" onClick={() => strike(80, 7)}>⚔️ Atacar sola</button>
-              <button className="pixel-btn gold" onClick={() => { play('confirm'); setStep('allies') }}>✨ Llamar a mis heroínas</button>
+              <button className="pixel-btn gold" onClick={() => { play('confirm'); if (powerup) track(EVENTS.powerupVisto); setStep('allies') }}>✨ Llamar a mis heroínas</button>
             </PixelDialog>
           )}
           {step === 'allies' && (
-            <PixelDialog speaker="YessenIA" text={`¡Llegaron ${allies.map(a => a.name).join(', ')}! Ellas también escucharon al NoPuedo y lo vencieron. Juntas son imparables.`}>
-              <button className="pixel-btn gold big" onClick={comboAttack}>💥 Ataque combinado</button>
-            </PixelDialog>
+            <>
+              {powerup && (
+                <div className="boss-powerup anim-pop" role="note">
+                  <span className="boss-powerup-tag">💫 POWER-UP DE UNA MENTORA REAL</span>
+                  <p>“{powerup.text}”</p>
+                  <small>— {powerup.name}, {powerup.role}{powerup.org ? ` en ${powerup.org}` : ''}</small>
+                </div>
+              )}
+              <PixelDialog
+                speaker="YessenIA"
+                text={`¡Llegaron ${allies.map(a => a.name).join(', ')}! Ellas también escucharon al NoPuedo y lo vencieron.${powerup ? ` Y ${powerup.name.split(' ')[0]}, una mentora de verdad, te manda su poder.` : ''} Juntas son imparables.`}
+              >
+                <button className="pixel-btn gold big" onClick={comboAttack}>💥 Ataque combinado</button>
+              </PixelDialog>
+            </>
           )}
         </div>
       </div>

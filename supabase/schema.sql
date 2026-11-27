@@ -192,3 +192,132 @@ alter table public.leads add column if not exists consent_at timestamptz;
 -- Mismo criterio que el resto: RLS activo y sin políticas.
 -- Solo el backend (clave secreta) puede leer y escribir aquí.
 alter table public.leads enable row level security;
+
+-- ============================================================
+-- RED DE MENTORAS (HEROW Conecta)
+-- Profesionales adultas verificadas por el equipo. Nunca hay chat privado
+-- con las jugadoras: solo eventos grupales publicados, respuestas públicas
+-- a preguntas anónimas y power-ups de ánimo. Todo pasa por moderación.
+-- ============================================================
+create table if not exists public.mentors (
+  id          uuid primary key default gen_random_uuid(),
+  name        text not null check (char_length(name) between 2 and 80),
+  -- Contacto con el equipo HEROW. Nunca se muestra a las jugadoras.
+  email       text not null unique check (char_length(email) between 5 and 160),
+  role        text not null check (char_length(role) between 2 and 80),
+  org         text check (char_length(org) <= 120),
+  -- Solo para que el equipo verifique quién es. Nunca se muestra a las jugadoras.
+  linkedin    text check (char_length(linkedin) <= 200),
+  portals     text[] not null default '{}',
+  region      text check (char_length(region) <= 40),
+  story       text not null default '' check (char_length(story) <= 600),
+  advice      text not null default '' check (char_length(advice) <= 300),
+  powerup     text not null default '' check (char_length(powerup) <= 140),
+  status      text not null default 'pending' check (status in ('pending', 'approved', 'rejected', 'paused')),
+  -- Código de acceso al panel: solo guardamos su hash (sha256).
+  code_hash   text not null,
+  consent_at  timestamptz not null default now(),
+  approved_at timestamptz,
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now()
+);
+create index if not exists mentors_status on public.mentors (status);
+create unique index if not exists mentors_code_hash on public.mentors (code_hash);
+
+-- Eventos grupales: charlas, talleres, visitas, ferias.
+create table if not exists public.mentor_events (
+  id           uuid primary key default gen_random_uuid(),
+  mentor_id    uuid not null references public.mentors (id) on delete cascade,
+  title        text not null check (char_length(title) between 5 and 120),
+  description  text not null default '' check (char_length(description) <= 600),
+  kind         text not null check (kind in ('charla', 'taller', 'visita', 'feria', 'mentoria_grupal')),
+  modality     text not null check (modality in ('virtual', 'presencial', 'hibrido')),
+  region       text check (char_length(region) <= 40),
+  place        text check (char_length(place) <= 160),
+  url          text check (char_length(url) <= 300),
+  starts_at    timestamptz not null,
+  duration_min int not null default 60 check (duration_min between 15 and 600),
+  portals      text[] not null default '{}',
+  -- review = espera revisión del equipo (la moderación automática no estaba disponible).
+  status       text not null default 'published' check (status in ('review', 'published', 'cancelled')),
+  created_at   timestamptz not null default now()
+);
+create index if not exists mentor_events_upcoming on public.mentor_events (status, starts_at);
+
+-- "Me apunto": la mentora solo ve cuántas van, nunca quiénes.
+create table if not exists public.event_rsvps (
+  user_id    uuid not null references auth.users (id) on delete cascade,
+  event_id   uuid not null references public.mentor_events (id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (user_id, event_id)
+);
+
+-- Preguntas anónimas de las jugadoras. Las respuestas son públicas para todas.
+create table if not exists public.mentor_questions (
+  id          uuid primary key default gen_random_uuid(),
+  user_id     uuid not null references auth.users (id) on delete cascade,
+  mentor_id   uuid references public.mentors (id) on delete set null,
+  answered_by uuid references public.mentors (id) on delete set null,
+  portal_id   text check (portal_id in ('code', 'robotics', 'design', 'science')),
+  level       int not null default 1,
+  question    text not null check (char_length(question) between 10 and 400),
+  answer      text check (char_length(answer) <= 1000),
+  -- pending: espera respuesta · review: espera revisión del equipo
+  -- answered: publicada · hidden: retirada por el equipo
+  status      text not null default 'pending' check (status in ('pending', 'review', 'answered', 'hidden')),
+  answered_at timestamptz,
+  created_at  timestamptz not null default now()
+);
+create index if not exists mentor_questions_status on public.mentor_questions (status, created_at desc);
+create index if not exists mentor_questions_user on public.mentor_questions (user_id, created_at desc);
+
+-- ============================================================
+-- MODO SIN INTERNET
+-- Respuestas de práctica hechas sin conexión. El id lo genera el navegador:
+-- si la misma respuesta llega dos veces (reintento), no suma dos veces.
+-- ============================================================
+create table if not exists public.offline_answers (
+  id          uuid primary key,
+  user_id     uuid not null references auth.users (id) on delete cascade,
+  question_id text not null,
+  correct     boolean not null,
+  points      int not null default 0 check (points >= 0),
+  answered_at timestamptz not null,
+  created_at  timestamptz not null default now()
+);
+create index if not exists offline_answers_user_created on public.offline_answers (user_id, created_at desc);
+
+-- Las rondas de práctica sin internet también quedan en el historial.
+alter table public.rounds drop constraint if exists rounds_mode_check;
+alter table public.rounds add constraint rounds_mode_check check (mode in ('ai', 'live', 'offline'));
+
+alter table public.mentors          enable row level security;
+alter table public.mentor_events    enable row level security;
+alter table public.event_rsvps      enable row level security;
+alter table public.mentor_questions enable row level security;
+alter table public.offline_answers  enable row level security;
+
+-- ============================================================
+-- SEGUIDORES Y REACCIONES (HEROW Conecta)
+-- Seguir es en un solo sentido: la mentora ve CUÁNTAS la siguen, nunca quiénes.
+-- Las reacciones son botones fijos (sin texto libre): "Me ayudó" y "Me inspira".
+-- ============================================================
+create table if not exists public.mentor_follows (
+  user_id    uuid not null references auth.users (id) on delete cascade,
+  mentor_id  uuid not null references public.mentors (id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (user_id, mentor_id)
+);
+create index if not exists mentor_follows_mentor on public.mentor_follows (mentor_id);
+
+create table if not exists public.answer_reactions (
+  user_id     uuid not null references auth.users (id) on delete cascade,
+  question_id uuid not null references public.mentor_questions (id) on delete cascade,
+  kind        text not null check (kind in ('me_ayudo', 'me_inspira')),
+  created_at  timestamptz not null default now(),
+  primary key (user_id, question_id, kind)
+);
+create index if not exists answer_reactions_question on public.answer_reactions (question_id);
+
+alter table public.mentor_follows   enable row level security;
+alter table public.answer_reactions enable row level security;

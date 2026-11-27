@@ -8,8 +8,22 @@ import SceneBg from '../components/SceneBg'
 import { BACKGROUNDS, SPRITES } from '../data/assets'
 import { EQUIPO, PREMIO } from '../data/equipo'
 import { HEROINES, PORTALS } from '../data/heroines'
+import { api } from '../lib/api'
 import { usePlayer } from '../lib/usePlayer'
 import { play } from '../lib/sfx'
+
+// HEROW Conecta: lo que gana cada lado de la red.
+const RED = [
+  { emoji: '😶', title: 'Ellas', text: 'Tienen miedo o simplemente no saben qué oportunidades existen. Casi nunca han visto de cerca a una ingeniera o una científica.' },
+  { emoji: '🤝', title: 'HEROW Conecta', text: 'YessenIA las acerca a mentoras verificadas: charlas y talleres grupales, preguntas anónimas y power-ups contra el NoPuedo. Sin chats privados.' },
+  { emoji: '👩‍🔬', title: 'Las mentoras', text: 'Profesionales que quieren llegar a las chicas y no tenían un espacio seguro para hacerlo. Aquí ven su impacto real.' },
+]
+
+const SIN_INTERNET = [
+  { emoji: '📲', title: 'Se instala y abre sin señal', text: 'La primera vez que entras con internet, HEROW queda guardado en el celular o la compu del colegio.' },
+  { emoji: '📡', title: 'Practica y sincroniza', text: 'Responde preguntas de los 4 portales sin conexión. Tus puntos se suman solos cuando vuelve la señal.' },
+  { emoji: '🖨️', title: 'Kit imprimible para el aula', text: 'Para colegios sin internet: preguntas, tarjetas de heroínas y retos NoPuedo para jugar en papel.' },
+]
 
 const STEPS = [
   { img: SPRITES.yessenia, title: '1. Despierta', text: 'YessenIA te hace 3 preguntas de situaciones reales y descubre qué portal STEM va contigo.' },
@@ -42,6 +56,13 @@ export default function Landing() {
   const { session } = usePlayer()
   const [scrolled, setScrolled] = useState(false)
   const [filter, setFilter] = useState('all')
+  const [red, setRed] = useState(null) // mentoras verificadas (público)
+
+  useEffect(() => {
+    let alive = true
+    api.conectaPublic().then(r => alive && setRed(r)).catch(() => {})
+    return () => { alive = false }
+  }, [])
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 50)
@@ -74,6 +95,8 @@ export default function Landing() {
           <ul className="nav-links">
             <li><a href="#como-funciona">Cómo funciona</a></li>
             <li><a href="#heroinas">Heroínas</a></li>
+            <li><a href="#mentoras">Mentoras</a></li>
+            <li><a href="#sin-internet">Sin internet</a></li>
             <li><a href="#nosotros">Nosotros</a></li>
             <li><a href="#sumate">Súmate</a></li>
             <li><a href="/arcade" onClick={(e) => { e.preventDefault(); play('select'); navigate('/arcade') }}>Arcade</a></li>
@@ -150,6 +173,68 @@ export default function Landing() {
           </div>
           <div className="center" style={{ marginTop: 48 }}>
             <button className="pixel-btn gold big" onClick={start}>▶ Quiero ser una heroína</button>
+          </div>
+        </div>
+      </section>
+
+      <section className="pixel-section" id="mentoras">
+        <div className="pixel-section-inner">
+          <div className="center"><span className="pixel-tag">🤝 HEROW Conecta</span></div>
+          <h2>No es solo un juego: es tu red</h2>
+          <p className="lead">
+            Las mentoras quieren llegar a ellas. Ellas no saben que existen. HEROW las une dentro del juego,
+            con YessenIA como puente y con la seguridad de siempre.
+          </p>
+          <div className="alianzas-grid">
+            {RED.map(r => (
+              <div key={r.title} className="pixel-panel alianza-card">
+                <span className="alianza-emoji" aria-hidden="true">{r.emoji}</span>
+                <h3>{r.title}</h3>
+                <p>{r.text}</p>
+              </div>
+            ))}
+          </div>
+          {red?.mentors?.length > 0 && (
+            <div className="landing-mentoras">
+              {red.mentors.map(m => (
+                <article key={m.id} className="pixel-panel landing-mentora">
+                  <span className="opp-type">✔ Mentora verificada {m.badge && <span className="mentor-badge">{m.badge.emoji} {m.badge.name}</span>}</span>
+                  <h3>{m.name}</h3>
+                  <p className="mentor-stats"><strong>{m.followers ?? 0}</strong> {m.followers === 1 ? 'seguidora' : 'seguidoras'}</p>
+                  <p className="opp-source">{m.role}{m.org ? ` · ${m.org}` : ''}</p>
+                  <p className="opp-tags">{m.portals.map(p => PORTALS[p] && <span key={p}>{PORTALS[p].emoji} {PORTALS[p].name}</span>)}</p>
+                  {m.advice && <p className="landing-mentora-quote">“{m.advice}”</p>}
+                </article>
+              ))}
+            </div>
+          )}
+          <div className="title-actions center">
+            <button className="pixel-btn gold big" onClick={start}>▶ Quiero conocerlas</button>
+            <button className="pixel-btn cyan big" onClick={() => { play('select'); navigate('/mentoras') }}>🛡️ Soy profesional: quiero ser mentora</button>
+          </div>
+        </div>
+      </section>
+
+      <section className="pixel-section" id="sin-internet">
+        <div className="pixel-section-inner">
+          <div className="center"><span className="pixel-tag">📡 Hasta donde no llega la señal</span></div>
+          <h2>HEROW funciona sin internet</h2>
+          <p className="lead">
+            El talento está en todo el Perú, la señal no. Por eso HEROW se puede usar en zonas rurales y
+            colegios sin conexión, y se sincroniza solo cuando vuelve el internet.
+          </p>
+          <div className="alianzas-grid">
+            {SIN_INTERNET.map(s => (
+              <div key={s.title} className="pixel-panel alianza-card">
+                <span className="alianza-emoji" aria-hidden="true">{s.emoji}</span>
+                <h3>{s.title}</h3>
+                <p>{s.text}</p>
+              </div>
+            ))}
+          </div>
+          <div className="title-actions center">
+            <button className="pixel-btn cyan big" onClick={() => { play('select'); navigate('/practica') }}>📡 Probar la práctica</button>
+            <button className="pixel-btn ghost big" onClick={() => { play('select'); navigate('/kit') }}>🖨️ Kit para docentes</button>
           </div>
         </div>
       </section>

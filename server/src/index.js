@@ -6,11 +6,14 @@ import { optionalUser, requireUser } from './middleware/auth.js'
 import { arcadeRouter } from './routes/arcade.js'
 import { authRouter } from './routes/auth.js'
 import { combatRouter } from './routes/combat.js'
+import { conectaPublicRouter, conectaRouter } from './routes/conecta.js'
 import { meRouter } from './routes/me.js'
 import { missionsRouter } from './routes/missions.js'
 import { leadsRouter } from './routes/leads.js'
 import { opportunitiesRouter } from './routes/opportunities.js'
 import { liveRouter } from './routes/live.js'
+import { mentorsRouter } from './routes/mentors.js'
+import { offlinePublicRouter, offlineRouter } from './routes/offline.js'
 import { attachRealtime, WS_PATH } from './realtime/hub.js'
 import { recommendationsRouter } from './routes/recommendations.js'
 import { yesseniaRouter } from './routes/yessenia.js'
@@ -28,8 +31,9 @@ app.use(express.json({ limit: '50kb' }))
 app.use(cors({ origin: config.corsOrigins }))
 
 let dbReady = false
+let conectaReady = false
 app.get('/api/health', (_req, res) => {
-  res.json({ ok: true, features: { ...features, dbReady } })
+  res.json({ ok: true, features: { ...features, dbReady, conectaReady } })
 })
 
 const limit = (max) => rateLimit({ windowMs: 60_000, limit: max, standardHeaders: 'draft-8', legacyHeaders: false })
@@ -44,6 +48,13 @@ app.use('/api/arcade', limit(240), requireUser, arcadeRouter)
 app.use('/api/yessenia', limit(20), optionalUser, yesseniaRouter)
 app.use('/api/recommendations', limit(10), recommendationsRouter)
 app.use('/api/leads', limit(30), leadsRouter)
+// Red de mentoras (HEROW Conecta)
+app.use('/api/conecta/public', limit(60), conectaPublicRouter)
+app.use('/api/conecta', limit(60), requireUser, conectaRouter)
+app.use('/api/mentors', limit(30), mentorsRouter)
+// Modo sin internet
+app.use('/api/offline', limit(30), offlinePublicRouter) // /pack y /kit: públicos
+app.use('/api/offline', limit(30), requireUser, offlineRouter)
 
 // Solo desarrollo: sumar puntos para probar subidas de nivel sin jugar 50 rondas.
 if (config.devTools) {
@@ -85,6 +96,11 @@ const server = app.listen(config.port, async () => {
     dbReady = true
     console.log(`   Base de datos lista · ${n} preguntas semilla`)
     scheduleOpportunityAgent(config.scrapeCacheMs)
+    const probe = await db.from('mentors').select('id', { count: 'exact', head: true })
+    conectaReady = !probe.error
+    console.log(conectaReady
+      ? '   Red de mentoras y modo sin internet listos'
+      : '   ⚠️  Red de mentoras apagada: vuelve a ejecutar supabase/schema.sql en Supabase → SQL Editor.')
   } catch (err) {
     console.error(`   ❌ Base de datos no lista: ${err.message}`)
     console.error('      Ejecuta supabase/schema.sql en Supabase → SQL Editor.')

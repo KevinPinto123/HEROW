@@ -573,6 +573,97 @@ sequenceDiagram
 
 ---
 
+## 🤝 HEROW Conecta — La red de mentoras
+
+HEROW ya no es solo un juego: también es **la red que conecta a las chicas con profesionales reales**.
+
+| Ellas | HEROW Conecta | Las mentoras |
+|:---|:---|:---|
+| Tienen miedo o no saben qué oportunidades existen. | YessenIA las acerca a mentoras verificadas dentro del juego. | Quieren llegar a ese público y no tenían un espacio seguro. |
+
+**Qué puede hacer una jugadora** (`/conecta`, menú *🤝 Mentoras*):
+- 📅 **Eventos grupales**: charlas, talleres, visitas y ferias, virtuales o presenciales, filtrados por su portal y su región. Botón *Me apunto*, enlace de inscripción y descarga al calendario del celular (.ics, con recordatorio).
+- 👩‍🔬 **Mentoras**: cómo empezó cada una y "lo que me hubiera gustado saber a tu edad".
+- 💬 **Preguntas anónimas**: la mentora solo ve el nivel y el portal. La respuesta se publica en un muro para que ayude a todas.
+- 💫 **Power-up en el jefe final**: la frase de una mentora real aparece cuando llama a sus aliadas contra el NoPuedo.
+- YessenIA conoce las mentoras y eventos de su portal y se los recomienda.
+- 💜 **Seguir a una mentora**: sus charlas y respuestas aparecen primero ("⭐ De una mentora que sigues").
+- 💜 **"Me ayudó" / ✨ "Me inspira"** en cada respuesta: la forma de agradecer sin chat.
+- Una guía de 3 pasos (Sigue → Pregunta → Asiste) arriba de todo, para entenderlo sin leer mucho.
+
+**Las mentoras ganan seguidoras e insignias** según su impacto real:
+
+| Insignia | Puntos de impacto |
+|:---|:---|
+| 🌱 Semilla | 0 |
+| 🧭 Guía | 10 |
+| ✨ Inspiradora | 40 |
+| 👑 Leyenda HEROW | 100 |
+
+Cada seguidora suma 1, cada respuesta 3, cada "Me ayudó" 2 y cada chica apuntada a un evento 1. En su panel ven la barra hacia la siguiente insignia. La landing muestra a las mentoras con más impacto. Ellas ven **cuántas** las siguen, nunca **quiénes**.
+
+**Qué puede hacer una mentora** (`/mentoras` → postula · `/mentoras/panel` → entra con su código `HRW-XXXX-XXXX-XXXX`):
+publicar eventos, responder preguntas, editar su perfil y ver su impacto (**cuántas** chicas se apuntaron, nunca **quiénes**).
+
+**Equipo HEROW** (`/mentoras/admin`, token `ADMIN_TOKEN`): verifica a cada mentora (LinkedIn) antes de que aparezca, revisa lo que la moderación automática no pudo y puede pausar mentoras u ocultar contenido.
+
+> 🔐 **La regla de oro sigue intacta: no hay chats privados.** Las preguntas son anónimas, las respuestas públicas, los eventos grupales. Todo texto pasa por un filtro que bloquea teléfonos, correos, @redes, enlaces y frases como "escríbeme al WhatsApp" (`server/src/services/safety.js`) y por la moderación de OpenAI. Si la moderación no está disponible, el contenido queda en revisión del equipo: **nunca se publica sin revisar**.
+
+## 📡 HEROW sin internet — para zonas rurales y colegios sin señal
+
+| Qué | Cómo funciona |
+|:---|:---|
+| 📲 **App instalable** | Es una PWA: la primera visita con señal guarda el juego completo (`dist/sw.js`, generado en cada build por `vite.config.js` desde `frontend/sw-template.js`). Después abre sin internet. |
+| 📡 **Práctica sin internet** (`/practica`) | Descarga un paquete con el banco de preguntas y se juega sin conexión. Las respuestas quedan en una cola y se envían solas al volver la señal. El servidor **vuelve a corregir** cada respuesta (el navegador nunca dice "acerté"): +4 por acierto, +1 por intento, tope de 60 puntos al día. Reenviar el mismo lote no suma dos veces. También funciona sin cuenta (sin puntos). |
+| 💾 **Pantallas guardadas** | El dashboard y Conecta abren con la última copia guardada. Apuntarse a un evento o preguntar a una mentora sin señal queda en cola y se envía solo. |
+| 🖨️ **Kit para docentes** (`/kit`) | Página imprimible (o PDF) con preguntas de los 4 portales, tarjetas de heroínas, retos NoPuedo y hoja de respuestas, para jugar en el aula sin ningún dispositivo. |
+| 🔔 **Aviso de conexión** | Un chip muestra cuándo no hay señal y cuántas cosas esperan para enviarse. Al volver la señal confirma qué se sincronizó. |
+
+Todo se guarda **por usuaria**: en una computadora compartida del colegio no se mezclan datos.
+
+### ⚙️ Activar estas funciones en producción
+
+1. **Base de datos:** vuelve a ejecutar `supabase/schema.sql` en Supabase → SQL Editor (es idempotente; crea `mentors`, `mentor_events`, `event_rsvps`, `mentor_questions`, `offline_answers`). Mientras no lo hagas, la app muestra "La red de mentoras se está activando" en vez de fallar.
+2. **Railway:** agrega `ADMIN_TOKEN` (un texto largo inventado) para el panel `/mentoras/admin`. Si no, se usa `LEADS_ADMIN_TOKEN`.
+3. **Desplegar** backend y frontend como siempre. `/api/health` muestra `conectaReady: true` cuando todo está listo.
+4. **Probar:** `npm run test:conecta:e2e --prefix server` contra el backend (crea y borra una jugadora y una mentora de prueba).
+
+## 📊 KPIs y Microsoft Clarity
+
+HEROW mide su impacto en dos capas:
+
+| Capa | Qué mide | Dónde se ve |
+|:---|:---|:---|
+| **Microsoft Clarity** | Comportamiento en pantalla: mapas de calor, grabaciones, embudos, eventos KPI | clarity.microsoft.com |
+| **Base de datos** | Impacto real y lo que pasa sin internet (Clarity no lo ve) | `/mentoras/admin` → *KPIs de impacto* |
+
+**Activar Clarity:** crea un proyecto en clarity.microsoft.com y pon su ID en `VITE_CLARITY_ID` (Vercel). Vacío = no se mide nada.
+En *Settings → Masking* elige **Strict**: las usuarias son menores y así ningún texto aparece en las grabaciones.
+
+**Privacidad:**
+- Clarity solo se carga **después** de que la persona acepta el aviso de medición. Puede cambiar su decisión en el footer, en *Preferencias de medición*.
+- Nunca se envía el usuario, el id ni lo que escriben.
+- Además del modo Strict, el código oculta (`data-clarity-mask`): el nombre de usuaria, las preguntas y respuestas, los formularios y los paneles de mentoras y del equipo.
+- Los eventos y etiquetas están en `frontend/src/lib/analytics.js`.
+
+**Etiquetas de sesión** (para filtrar): `rol` (jugadora/mentora), `nivel`, `portal`, `modo` (online/offline), `instalada`, `modalidad`, `tipo_contacto`.
+
+| KPI | Cómo se calcula | Fuente |
+|:---|:---|:---|
+| Activación | `registro_completado` / visitas a la landing | Clarity |
+| Conexión con mentoras | `evento_me_apunto` + `pregunta_enviada` / `conecta_abierto` | Clarity |
+| Intención real de asistir | `evento_inscripcion_click` y `evento_calendario` / `evento_me_apunto` | Clarity |
+| Chicas conectadas (30 días) | jugadoras distintas que preguntaron o se apuntaron | Panel del equipo |
+| Respuesta de mentoras | % de preguntas respondidas y tiempo típico de respuesta | Panel del equipo |
+| Oferta de mentoras | `mentora_postulo`, `mentora_publico_evento`, `mentora_respondio` · mentoras activas | Clarity + panel |
+| Confianza (NoPuedo) | `powerup_mentora_visto` → `nivel_subido` | Clarity |
+| Alcance sin internet | chicas y respuestas sincronizadas sin señal (30 días) | Panel del equipo |
+| Uso sin internet | `practica_ronda_completada` (modo offline), `sincronizacion_completada`, `app_instalada` | Clarity |
+| Colegios sin internet | `kit_impreso` | Clarity |
+| Aliados | `waitlist_enviado` por `tipo_contacto` | Clarity |
+
+> Lo que ocurre totalmente sin señal no llega a Clarity (necesita internet para cargar). Por eso el alcance sin internet se mide desde la base, con las respuestas que se sincronizan.
+
 ## 🎨 Paleta de Colores — Futurista y Sin Miedo
 
 > *Colores inspirados en el logo de HEROW: morado, rosado y celeste — una paleta futurista que dice "tu futuro es brillante y no debes tenerle miedo".*
@@ -667,6 +758,8 @@ Con `DEV_TOOLS=true` en `server/.env`, la pantalla **Entrar** muestra botones pa
 | `npm run test:live --prefix server` | Partida en vivo real entre 2 jugadoras (WebSocket de HEROW Live) |
 | `npm run test:arcade --prefix server` | Reglas del arcade, salas online y que cada nivel de Chispa y Gota se pueda terminar |
 | `npm run test:arcade:e2e --prefix server` | Arcade online de punta a punta contra un backend real (sala con código, michi, reporte, duelo) |
+| `npm run test:conecta --prefix server` | Filtro de datos de contacto, códigos de mentora, corrección y tope de la práctica sin internet |
+| `npm run test:conecta:e2e --prefix server` | Red de mentoras y sincronización sin internet de punta a punta contra un backend real |
 
 ### 🌀 Waitlist (colegios, aliados, inversores)
 

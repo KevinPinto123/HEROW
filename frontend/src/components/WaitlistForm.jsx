@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { EVENTS, track } from '../lib/analytics'
 import { api } from '../lib/api'
 import { submitLead, watchLeadQueue } from '../lib/leads'
 import { play } from '../lib/sfx'
@@ -58,6 +59,7 @@ export default function WaitlistForm({ source = 'landing' }) {
       const res = await submitLead({ ...form, email: form.email.trim(), consent: true, source })
       play('win')
       setDone({ queued: res.queued, duplicate: res.duplicate })
+      track(EVENTS.waitlist, { tipo_contacto: form.role })
       setForm(VACIO)
       setConsent(false)
       setCount(c => (res.duplicate ? c : c + 1))
