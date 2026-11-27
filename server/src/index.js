@@ -96,7 +96,8 @@ const server = app.listen(config.port, async () => {
     dbReady = true
     console.log(`   Base de datos lista · ${n} preguntas semilla`)
     scheduleOpportunityAgent(config.scrapeCacheMs)
-    const probe = await db.from('mentors').select('id', { count: 'exact', head: true })
+    // Consulta normal (no head): una consulta head no reporta error si la tabla no existe.
+    const probe = await db.from('mentors').select('id').limit(1)
     conectaReady = !probe.error
     console.log(conectaReady
       ? '   Red de mentoras y modo sin internet listos'

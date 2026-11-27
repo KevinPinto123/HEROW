@@ -285,7 +285,13 @@ function requireAdmin(req, res, next) {
 const admin = Router()
 admin.use(requireAdmin)
 
-const count = async (query) => (await query).count ?? 0
+// Si la consulta falla (p. ej. falta una tabla) se lanza, para no mostrar ceros falsos.
+const count = async (query) => {
+  const { count: n, error, status } = await query
+  if (error) throw new Error(`[db] ${error.message}`)
+  if (status === 404) throw new Error("[db] Could not find the table in the schema cache")
+  return n ?? 0
+}
 
 /**
  * KPIs de impacto calculados desde la base (la fuente confiable). Complementan a Clarity,
